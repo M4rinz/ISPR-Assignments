@@ -81,7 +81,7 @@ class BayesNetwork():
                 print("Trying to insert a node without an ID")
                 print("For the moment, this is not OK...")
                 print("Based on the current number of nodes in the network,"
-                    "the new node will receive automatically the ID", new_id)
+                    " the new node will receive automatically the ID", new_id)
                 node.set_id(new_id)
             self._nodes_list.append(node)
 
