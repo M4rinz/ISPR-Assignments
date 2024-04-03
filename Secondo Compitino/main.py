@@ -31,9 +31,13 @@ BN1.add_arcs(arc1,arc2)
 n1.print_attributes()
 n2.print_attributes()
 n3.print_attributes()
+print()
 
+n7 = Node(label="settimo", node_id = 7)
+n8 = Node(label="ottavo", node_id = 8)
+BN2 = BayesNetwork([n7,n8], [(7,8)])
 
-
+print(f"Nodes in BN2 are {list(map(lambda x: x.ID, BN2._nodes_list))}")
 
 #if __name__ == "__main__":
 #    main()
