@@ -1,12 +1,16 @@
 from typing import List, Callable, Tuple
 import exceptions
+#from distributions import Bernoulli
 
 class Node():
-    def __init__(self, label:str, node_id:int = None):  # Of course, more to come!
+    def __init__(self, label:str, 
+                 node_id:int = None,
+                 distrib = None ):  # Of course, more to come!
         self.label = label
         self.ID = node_id
         self.FS = []    # forward star
         self.BS = []    # backward star
+        #self.distribution = 
 
     def set_id(self, node_id:int) -> None:
         self.ID = node_id
