@@ -14,17 +14,22 @@ BN1 = BayesNetwork()
 BN1.add_nodes(n1)
 BN1.add_nodes(n2)
 
+# Create a new StringIO object
 output = io.StringIO()
+# Save the current value of sys.stdout so we can restore it later
 old_stdout = sys.stdout
-
+# Redirect sys.stdout to our StringIO object
 sys.stdout = output
 
 BN1.add_nodes(n3)
 
+# Restore standard output to the original one
 sys.stdout = old_stdout
 
-# fix this!! Continue!
-print("output = ", output.getvalue())
+assert output.getvalue() == '''Trying to insert a node without an ID
+For the moment, this is not OK...
+Based on the current number of nodes in the network, the new node will receive automatically the ID 3
+'''
 
 # create arcs
 arc1 = (1,2)
