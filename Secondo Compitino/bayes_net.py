@@ -1,6 +1,6 @@
 from typing import List, Callable, Tuple
 import exceptions
-#from distributions import Bernoulli
+from distributions import Bernoulli
 
 class Node():
     def __init__(self, label:str, 
@@ -10,7 +10,7 @@ class Node():
         self.ID = node_id
         self.FS = []    # forward star
         self.BS = []    # backward star
-        #self.distribution = 
+        self.distribution = distrib
 
     def set_id(self, node_id:int) -> None:
         self.ID = node_id
@@ -60,7 +60,7 @@ class BayesNetwork():
     def __init__(self, 
                  nodes:List[Node] = [],          # maybe not the best idea. We'll see
                  arcs:List[Tuple[int,int]] = []):   
-        self._nodes_list = []           # We assume that the nodes are given with the ID. 
+        self._nodes_list = []          # We assume that the nodes are given with the ID. 
                                         # Maybe I'll use the IDs for the topological sorting
         self._arcs_list = []
 

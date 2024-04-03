@@ -1,6 +1,8 @@
-from bayes_net import Node, BayesNetwork
 import io
 import sys
+import os
+sys.path.append(os.path.join(sys.path[0], '..'))
+from bayes_net import Node, BayesNetwork
 
 #create nodes
 n1 = Node(label="primo", node_id = 1)
