@@ -1,6 +1,6 @@
 from typing import List, Callable, Tuple
 import exceptions
-from distributions import Bernoulli
+from distributions import PriorBernoulli
 
 class Node():
     def __init__(self, label:str, 
@@ -8,8 +8,8 @@ class Node():
                  distrib = None ):  # Of course, more to come!
         self.label = label
         self.ID = node_id
-        self.FS = []    # forward star
-        self.BS = []    # backward star
+        self.FS = []    # forward star: children
+        self.BS = []    # backward star: parents
         self.distribution = distrib
 
     def set_id(self, node_id:int) -> None:
@@ -45,7 +45,7 @@ class Node():
         else:
             raise exceptions.InvalidArcException("Redundant arc?")
 
-    def add_child(self, node) -> None:    # Maybe use a list of Nodes directly??
+    def add_child(self, node) -> None:
         self._add_to_star(node, self.FS)
 
     def add_parent(self, node) -> None:
