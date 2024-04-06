@@ -3,7 +3,7 @@ import sys
 import os
 sys.path.append(os.path.join(sys.path[0], '..'))
 from bayes_net import Node, BayesNetwork
-from distributions import PriorBernoulli, CPT
+from distributions import PriorBernoulli, PriorCategorical, CPT
 
 #create nodes
 n1 = Node(label="primo", node_id = 1)

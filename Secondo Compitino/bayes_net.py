@@ -1,6 +1,6 @@
-from typing import List, Callable, Tuple
+from typing import List, Callable, Tuple, Dict
 import exceptions
-from distributions import PriorBernoulli
+from distributions import PriorBernoulli, CPT, PriorCategorical
 
 class Node():
     def __init__(self, label:str, 
@@ -15,6 +15,25 @@ class Node():
     def set_id(self, node_id:int) -> None:
         self.ID = node_id
 
+    def assign_CPT(self, 
+                   dict:Dict[frozenset[Tuple[str,int]], float] = None,
+                   p:float = None) -> None:
+        if self.distribution is not None:
+            print(f"Warning: node {self.node_id} already has a distribution")
+            print("The current one will be destroyed and a new one will be created")
+            self.distribution = None
+
+        if dict is not None: 
+            # TODO: a check on the number of parents (to decide if CPT or Prior)
+            self.distribution = CPT(dict, self.BS, self.label)
+        elif p is not None:
+            self.distribution = PriorBernoulli(p)
+        else:
+            print("Please provide an initialization")
+
+        # My fear is that this will make a mess when one tries to create a 
+        # node with a distribution from the start.
+        # This has to be tought carefully
 
     def print_attributes(self) -> None:
         print()

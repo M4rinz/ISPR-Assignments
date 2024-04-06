@@ -1,3 +1,4 @@
+import enum
 import numpy as np
 from typing import List, Tuple, Dict
 import exceptions
@@ -16,14 +17,47 @@ class PriorBernoulli():
         return int(np.random.random() < self._p)
     
 
+class PriorCategorical():
+    def __init__(self, ps:List[float]):
+        if sum(ps) != 1 or any(p<0 for p in ps):
+            print("The vector of event probabilities should be a stochastic vector.")
+            print("A vector of zeros will be assigned. Please call the set_pvec method")
+            self._pvec = [0 for _ in ps]
+        else:
+            self._pvec = ps
+
+
+    def set_pvec(self, new_pvec:List[float]) -> None:
+        self._pvec = new_pvec
+
+    def get_pvec(self) -> List[float]:
+        return self._pvec
+    
+    def sample(self) -> int:
+        """Samples from the categorical distribution
+            according to the classes' probabilities
+            (assumed to be integers in {1,...,n})
+
+        Returns:
+            class: the sampled class
+        """
+        r = np.random.random()
+        prev = 0
+        for i,p_i in enumerate(self._pvec,1):
+            if r < p_i+prev:
+                return i
+            prev += p_i
+
+    
+
 class CPT():
     def __init__(self, 
                 init_dict:Dict[frozenset[Tuple[str,int]], float],   # WIP: dictionary with the initializations
                 parents_list:List,  # the idea is to just pass the BS
                 node_label:str
                 ):
-        self.owner_node_label = node_label
-        self.parents = {node.label: node for node in parents_list}
+        self._owner_node_label = node_label
+        self._parents = {node.label: node for node in parents_list}
         try:
             self.cond_distrib = self.build_cond_distrib(init_dict)  # welcome to the simple affairs' complication office 
         except exceptions.WrongAssignment as exc:
@@ -44,13 +78,13 @@ class CPT():
         '''
         init_dict = {}
         for i, (key, value) in enumerate(passed_dict.items(), 1):
-            new_row = [(self.parents[label],i) for label, i in key]
+            new_row = [(self._parents[label],i) for label, i in key]
 
             checkSet = set()
             for tuple in key:
                 checkSet.add(tuple[0])
-            if set(self.parents.keys()) != checkSet:
-                if set(self.parents.keys()) < checkSet:
+            if set(self._parents.keys()) != checkSet:
+                if set(self._parents.keys()) < checkSet:
                     status = 'over'
                 else:
                     status = 'under'
@@ -61,29 +95,29 @@ class CPT():
 
         return init_dict
 
-
+    # WIP: Again, we're assuming bernoullian rv
     def print_cpt(self) -> None:
         for key, value in self.cond_distrib.items():
             assignments = [f"{node.label}={val}" for node, val in key]
-            print(f"P({self.owner_node_label}=1 | {', '.join(assignments)}) = {value}")
+            print(f"P({self._owner_node_label}=1 | {', '.join(assignments)}) = {value}")
 
     def set_p(self, 
             assignment:Dict[str,int],
             new_p:float) -> None:
-        cpt_row = [(self.parents[label],val) for label, val in assignment.values()]
+        cpt_row = [(self._parents[label],val) for label, val in assignment.values()]
         cpt_row = frozenset(cpt_row)
         self.cond_distrib[cpt_row] = new_p
 
     def get_p(self, 
               assignment:Dict[str,int]) -> float:
-        cpt_row = [(self.parents[label],i) for label, i in assignment.values()]
+        cpt_row = [(self._parents[label],i) for label, i in assignment.values()]
         cpt_row = frozenset(cpt_row)
         return self.cond_distrib[cpt_row]
 
     # assuming that the RV is Bernoullian
     def sample(self) -> int:
         evidence = []
-        for parent in self.parents.values():
+        for parent in self._parents.values():
             parent_sample = parent.distribution.sample()    # sample from the parent's distribution. 
                                                             # This should trigger a recursive call
             # create a tuple with the outcome and add it to the 
