@@ -15,6 +15,7 @@ class Node():
     def set_id(self, node_id:int) -> None:
         self.ID = node_id
 
+
     def print_attributes(self) -> None:
         print()
         print('--------------------------------------------------')
