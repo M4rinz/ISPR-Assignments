@@ -1,4 +1,3 @@
-import enum
 import numpy as np
 from typing import List, Tuple, Dict
 import exceptions
@@ -64,7 +63,7 @@ class CPT():
             print(f'The CPT assignment is {exc.args[0]['status']}complete at row {exc.args[0]['row']}')
             #print(exc)
             print('The CPT will be automatically set to None.') 
-            print('Please destroy this object and try again')
+            print('Please call the build_cond_distrib method')
             self.cond_distrib = None
             # can really nothing be done for this issue?
 
