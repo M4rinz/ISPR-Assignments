@@ -53,7 +53,7 @@ class PriorCategorical():
 
 class CPT():
     def __init__(self, 
-                init_dict:Dict[PassedConditions, float],   # WIP: dictionary with the initializations
+                init_dict:Dict[PassedConditions, P],   # WIP: dictionary with the initializations
                 parents_list:List,  # the idea is to just pass the BS
                 node_label:str
                 ):
@@ -69,8 +69,8 @@ class CPT():
             # can really nothing be done for this issue?
 
     def build_cond_distrib(self, 
-                           passed_dict:Dict[PassedConditions, float]) -> \
-                           Dict[frozenset[Tuple], float]:
+                           passed_dict:Dict[PassedConditions, P]) -> \
+                           Dict[frozenset[Tuple], P]:
         '''
         Builds the actual dictionary that is used 
         as CPT data structure.
