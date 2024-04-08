@@ -2,14 +2,16 @@ import numpy as np
 from typing import List, Tuple, Dict
 import exceptions
 
+from BNTypes import P, PassedConditions
+
 class PriorBernoulli():
-    def __init__(self, p:float):
+    def __init__(self, p:P):
         self._p = p
 
-    def set_p(self, new_p:float) -> None:
+    def set_p(self, new_p:P) -> None:
         self._p = new_p
 
-    def get_p(self) -> float:
+    def get_p(self) -> P:
         return self._p
     
     def sample(self) -> int:
@@ -17,7 +19,7 @@ class PriorBernoulli():
     
 
 class PriorCategorical():
-    def __init__(self, ps:List[float]):
+    def __init__(self, ps:P):
         if sum(ps) != 1 or any(p<0 for p in ps):
             print("The vector of event probabilities should be a stochastic vector.")
             print("A vector of zeros will be assigned. Please call the set_pvec method")
@@ -26,10 +28,10 @@ class PriorCategorical():
             self._pvec = ps
 
 
-    def set_pvec(self, new_pvec:List[float]) -> None:
+    def set_pvec(self, new_pvec:P) -> None:
         self._pvec = new_pvec
 
-    def get_pvec(self) -> List[float]:
+    def get_pvec(self) -> P:
         return self._pvec
     
     def sample(self) -> int:
@@ -51,7 +53,7 @@ class PriorCategorical():
 
 class CPT():
     def __init__(self, 
-                init_dict:Dict[frozenset[Tuple[str,int]], float],   # WIP: dictionary with the initializations
+                init_dict:Dict[PassedConditions, float],   # WIP: dictionary with the initializations
                 parents_list:List,  # the idea is to just pass the BS
                 node_label:str
                 ):
@@ -61,14 +63,13 @@ class CPT():
             self.cond_distrib = self.build_cond_distrib(init_dict)  # welcome to the simple affairs' complication office 
         except exceptions.WrongAssignment as exc:
             print(f'The CPT assignment is {exc.args[0]['status']}complete at row {exc.args[0]['row']}')
-            #print(exc)
             print('The CPT will be automatically set to None.') 
             print('Please call the build_cond_distrib method')
             self.cond_distrib = None
             # can really nothing be done for this issue?
 
     def build_cond_distrib(self, 
-                           passed_dict:Dict[frozenset[Tuple[str,int]], float]) -> \
+                           passed_dict:Dict[PassedConditions, float]) -> \
                            Dict[frozenset[Tuple], float]:
         '''
         Builds the actual dictionary that is used 
@@ -108,13 +109,24 @@ class CPT():
         self.cond_distrib[cpt_row] = new_p
 
     def get_p(self, 
-              assignment:Dict[str,int]) -> float:
+              assignment:Dict[str,int]) -> P:
         cpt_row = [(self._parents[label],i) for label, i in assignment.values()]
         cpt_row = frozenset(cpt_row)
         return self.cond_distrib[cpt_row]
 
-    # assuming that the RV is Bernoullian
     def sample(self) -> int:
+        def innerSample(p:P) -> int:
+            start = 1
+            if isinstance(p,float):
+                p = [1-p, p]
+                start = 0
+            r = np.random.random()
+            prev = 0 
+            for i, p_i in enumerate(p,start):
+                if r < p_i + prev:
+                    return i
+                prev += p_i
+
         evidence = []
         for parent in self._parents.values():
             parent_sample = parent.distribution.sample()    # sample from the parent's distribution. 
@@ -130,4 +142,5 @@ class CPT():
 
         evidence = frozenset(evidence)  
         p = self.cond_distrib[evidence]
-        return int(np.random.random() < p)
+
+        return innerSample(p)

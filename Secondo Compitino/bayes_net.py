@@ -1,6 +1,8 @@
-from typing import List, Callable, Tuple, Dict
+from typing import List, Callable, Tuple, Dict, Optional
 import exceptions
 from distributions import PriorBernoulli, CPT, PriorCategorical
+
+from BNTypes import Arc, P, PassedConditions
 
 class Node():
     def __init__(self, label:str, 
@@ -16,7 +18,7 @@ class Node():
         self.ID = node_id
 
     def assign_CPT(self, 
-                   dict:Dict[frozenset[Tuple[str,int]], float] = None,
+                   dict:Optional[Dict[PassedConditions, P]] = None,
                    p:float = None) -> None:
         if self.distribution is not None:
             print(f"Warning: node {self.node_id} already has a distribution")
@@ -79,7 +81,7 @@ class Node():
 class BayesNetwork():
     def __init__(self, 
                  nodes:List[Node] = [],          # maybe not the best idea. We'll see
-                 arcs:List[Tuple[int,int]] = []):   
+                 arcs:List[Arc] = []):   
         self._nodes_list = []          # We assume that the nodes are given with the ID. 
                                         # Maybe I'll use the IDs for the topological sorting
         self._arcs_list = []
@@ -104,8 +106,6 @@ class BayesNetwork():
                     " the new node will receive automatically the ID", new_id)
                 node.set_id(new_id)
             self._nodes_list.append(node)
-
-    #def add_arc(self, from_node:int, to_node:int) -> None:
 
     def add_arcs(self, *args) -> None:
         for arc in args: 
