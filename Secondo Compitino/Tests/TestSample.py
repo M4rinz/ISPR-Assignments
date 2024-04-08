@@ -3,7 +3,7 @@ import sys
 import os
 sys.path.append(os.path.join(sys.path[0], '..'))
 from bayes_net import Node, BayesNetwork
-from distributions import PriorBernoulli, PriorCategorical, CPT
+from distributions import Prior, CPT
 
 #create nodes
 n1 = Node(label="primo", node_id = 1)
@@ -25,7 +25,7 @@ init_dict = {
     frozenset([('primo',1)]) : 0.99
 }
 CPTprova = CPT(init_dict, parents_list=n2.BS, node_label=n2.label)
-n1.distribution = PriorBernoulli(0.001)
+n1.distribution = Prior(0.001)
 
 CPTprova.sample()
 

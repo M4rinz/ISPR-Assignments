@@ -1,6 +1,6 @@
 from typing import List, Callable, Tuple, Dict, Optional
 import exceptions
-from distributions import PriorBernoulli, CPT, PriorCategorical
+from distributions import Prior, CPT
 
 from BNTypes import Arc, P, PassedConditions
 
@@ -18,18 +18,17 @@ class Node():
         self.ID = node_id
 
     def assign_CPT(self, 
-                   dict:Optional[Dict[PassedConditions, P]] = None,
-                   p:float = None) -> None:
+                   full_cpt:Optional[Dict[PassedConditions, P]] = None,
+                   p:Optional[P] = None) -> None:
         if self.distribution is not None:
-            print(f"Warning: node {self.node_id} already has a distribution")
+            print(f"Warning: node {self.node_id} already has a distribution.")
             print("The current one will be destroyed and a new one will be created")
             self.distribution = None
 
-        if dict is not None: 
-            # TODO: a check on the number of parents (to decide if CPT or Prior)
-            self.distribution = CPT(dict, self.BS, self.label)
+        if full_cpt is not None: 
+            self.distribution = CPT(full_cpt, self.BS, self.label)
         elif p is not None:
-            self.distribution = PriorBernoulli(p)
+            self.distribution = Prior(p)
         else:
             print("Please provide an initialization")
 

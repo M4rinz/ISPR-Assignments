@@ -4,32 +4,32 @@ import exceptions
 
 from BNTypes import P, PassedConditions
 
-class PriorBernoulli():
+class Prior():
     def __init__(self, p:P):
-        self._p = p
-
-    def set_p(self, new_p:P) -> None:
-        self._p = new_p
-
-    def get_p(self) -> P:
-        return self._p
-    
-    def sample(self) -> int:
-        return int(np.random.random() < self._p)
-    
-
-class PriorCategorical():
-    def __init__(self, ps:P):
-        if sum(ps) != 1 or any(p<0 for p in ps):
-            print("The vector of event probabilities should be a stochastic vector.")
-            print("A vector of zeros will be assigned. Please call the set_pvec method")
-            self._pvec = [0 for _ in ps]
+        if isinstance(p,float):
+            self._distrib = 'Bernoulli'
+        elif isinstance(p,List):
+            self._distrib = 'Categorical'
         else:
-            self._pvec = ps
+            print("Warning: invalid datatype for probability masses")
+            
+        self.set_pvec(p)
 
-
-    def set_pvec(self, new_pvec:P) -> None:
-        self._pvec = new_pvec
+    def set_pvec(self, new_p:P) -> None:
+        if isinstance(new_p,float):
+            if new_p < 0 or new_p > 1:
+                print(f"p = {new_p} is not a valid probability.")
+                print("p will be set to 0.5. Please call the set_pvec method with a valid value")
+                self._pvec = [0.5,0.5]
+            else:
+                self._pvec = [1-new_p,new_p]
+        else:
+            if sum(new_p) != 1 or any(p_j<0 for p_j in new_p):
+                print("The vector of event probabilities should be a stochastic vector.")
+                print("A vector of zeros will be assigned. Please call the set_pvec method with valid values")
+                self._pvec = [0 for _ in new_p]
+            else:
+                self._pvec = new_p
 
     def get_pvec(self) -> P:
         return self._pvec
@@ -42,9 +42,13 @@ class PriorCategorical():
         Returns:
             class: the sampled class
         """
+        if self._distrib == 'Bernoulli':
+            start = 0
+        else:
+            start = 1
         r = np.random.random()
         prev = 0
-        for i,p_i in enumerate(self._pvec,1):
+        for i,p_i in enumerate(self._pvec,start):
             if r < p_i+prev:
                 return i
             prev += p_i
