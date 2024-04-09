@@ -34,12 +34,12 @@ n4.assign_CPT(p = 0.8)       # the drummer can be sick with a 20% chance
 
 # create the CPT for the bureaucracy
 bureaucracy_cpt = {
-    frozenset([('soprintendenza',0),('sound_check',3)]) : 0.05,
-    frozenset([('soprintendenza',0),('sound_check',2)]) : 0.10,
-    frozenset([('soprintendenza',0),('sound_check',1)]) : 0.25,
-    frozenset([('soprintendenza',1),('sound_check',3)]) : 0.40,
-    frozenset([('soprintendenza',1),('sound_check',2)]) : 0.75,
-    frozenset([('soprintendenza',1),('sound_check',1)]) : 0.95
+    frozenset([('OkSoprintendenza',0),('sound_check',3)]) : 0.05,
+    frozenset([('OkSoprintendenza',0),('sound_check',2)]) : 0.10,
+    frozenset([('OkSoprintendenza',0),('sound_check',1)]) : 0.25,
+    frozenset([('OkSoprintendenza',1),('sound_check',3)]) : 0.40,
+    frozenset([('OkSoprintendenza',1),('sound_check',2)]) : 0.75,
+    frozenset([('OkSoprintendenza',1),('sound_check',1)]) : 0.95
 }
 n5.assign_CPT(full_cpt=bureaucracy_cpt)
 
@@ -55,3 +55,9 @@ concert_cpt = {
     frozenset([('OkBureaucracy',1),('OkWeather',1),('OkDrummer',1)]) : 0.99
 }
 n6.assign_CPT(full_cpt=concert_cpt)
+
+s = 0
+for _ in range(10000):
+    s += n6.distribution.sample()
+
+s = s/10000
