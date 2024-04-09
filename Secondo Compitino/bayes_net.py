@@ -1,4 +1,6 @@
-from typing import List, Callable, Tuple, Dict, Optional
+import textwrap
+
+from typing import List, Callable, Tuple, Dict, Optional, Union
 import exceptions
 from distributions import Prior, CPT
 
@@ -7,12 +9,12 @@ from BNTypes import Arc, P, PassedConditions
 class Node():
     def __init__(self, label:str, 
                  node_id:int = None,
-                 distrib = None ):  # Of course, more to come!
+                 distribution:Optional[Union[Prior,CPT]] = None):
         self.label = label
         self.ID = node_id
         self.FS = []    # forward star: children
         self.BS = []    # backward star: parents
-        self.distribution = distrib
+        self.distribution = distribution
 
     def set_id(self, node_id:int) -> None:
         self.ID = node_id
@@ -21,9 +23,9 @@ class Node():
                    full_cpt:Optional[Dict[PassedConditions, P]] = None,
                    p:Optional[P] = None) -> None:
         if self.distribution is not None:
-            print(f"Warning: node {self.node_id} already has a distribution.")
+            print(f"Warning: node {self.ID} already has a distribution.")
             print("The current one will be destroyed and a new one will be created")
-            self.distribution = None
+            #self.distribution = None
 
         if full_cpt is not None: 
             self.distribution = CPT(full_cpt, self.BS, self.label)
@@ -38,7 +40,7 @@ class Node():
 
     def print_attributes(self) -> None:
         print()
-        print('--------------------------------------------------')
+        print('------------------------------------------------------')
         print(f'{f"Node ID: {self.ID}":^25} | {f"Node Label: {self.label}":^25}')
         print('Its parents are:')
         for i in range(0, len(self.BS), 2):
@@ -54,7 +56,24 @@ class Node():
                 print(f',  ID: {self.FS[i+1].ID} L: {self.FS[i+1].label}')
             else:
                 print()
-        print('--------------------------------------------------')
+        
+        # The prints!!!!
+        try:
+            distrib_name = self.distribution.get_distribution_name()
+        except AttributeError:
+            distrib_name = None
+        if distrib_name is not None:
+            if 'Conditional' in distrib_name:
+                #print('The associated random var has '
+                #      f'{distrib_name} distribution described by the following CPT:')
+                print()
+                print('\n'.join(textwrap.wrap(f'The associated random variable has {distrib_name} distribution described by the following CPT:', width=54)))
+                self.distribution.print_cpt()
+            else:
+                print()
+                print(f'The associated random var is {distrib_name}, with distribution')
+                self.distribution.print_distribution()
+        print('------------------------------------------------------')
 
 
     def _add_to_star(self, toAdd, S) -> None:
@@ -92,6 +111,11 @@ class BayesNetwork():
         #TODO: some more safety measures?
 
     def get_nodes_number(self) -> int:
+        """Returns the number of nodes in the bayesian network
+
+        Returns:
+            int: Number of nodes
+        """
         return len(self._nodes_list)
     
 
@@ -107,9 +131,14 @@ class BayesNetwork():
             self._nodes_list.append(node)
 
     def add_arcs(self, *args) -> None:
+        """Adds the arcs passed in input to the bayesian network
+
+        Raises:
+            exceptions.DuplicateNodeIDError: Two nodes in the graph have the same ID
+        """        
         for arc in args: 
             try:
-                #TODO support for arcs given the node's ID?
+                #TODO support for arcs given the node's label?
                 tail_ID, head_ID = arc
                 tail_node = [n for n in self._nodes_list if n.ID == tail_ID]
                 head_node = [n for n in self._nodes_list if n.ID == head_ID]
@@ -117,6 +146,7 @@ class BayesNetwork():
                 len_tail = len(tail_node)
                 len_head = len(head_node)
 
+                # Just check that there are not repeated IDs
                 if len_tail > 1:
                     raise exceptions.DuplicateNodeIDError(f"Two nodes in the network have the same ID {tail_node}")
                 if len_head > 1:

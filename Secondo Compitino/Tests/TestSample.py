@@ -26,6 +26,8 @@ init_dict = {
 }
 CPTprova = CPT(init_dict, parents_list=n2.BS, node_label=n2.label)
 n1.distribution = Prior(0.001)
+#n1.assign_CPT(0.001)    
+
 
 CPTprova.sample()
 

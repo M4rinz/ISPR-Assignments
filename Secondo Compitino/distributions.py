@@ -7,9 +7,9 @@ from BNTypes import P, PassedConditions
 class Prior():
     def __init__(self, p:P):
         if isinstance(p,float):
-            self._distrib = 'Bernoulli'
+            self._distrib_name = 'Bernoulli'
         elif isinstance(p,List):
-            self._distrib = 'Categorical'
+            self._distrib_name = 'Categorical'
         else:
             print("Warning: invalid datatype for probability masses")
             
@@ -32,17 +32,33 @@ class Prior():
                 self._pvec = new_p
 
     def get_pvec(self) -> P:
-        return self._pvec
+        if self._distrib_name == 'Bernoulli':
+            return self._pvec[1]
+        else:
+            return self._pvec
+        
+    def get_distribution_name(self) -> str:
+        return self._distrib_name
+    
+    def print_distribution(self) -> None:
+        if self._distrib_name == 'Bernoulli':
+            print(f"P(X=1) = {self._pvec[1]}")
+        else:
+            for i, p in enumerate(self._pvec, start=1):
+                print(f"P(X={i}) = {p}")
     
     def sample(self) -> int:
-        """Samples from the categorical distribution
+        """Categorical prior: samples from the categorical distribution
             according to the classes' probabilities
             (assumed to be integers in {1,...,n})
 
+            Bernoullian prior: samples from the bernoullian distribution
+            with parameter p (output can be 0 or 1)
+
         Returns:
-            class: the sampled class
+            int: the sampled class
         """
-        if self._distrib == 'Bernoulli':
+        if self._distrib_name == 'Bernoulli':
             start = 0
         else:
             start = 1
@@ -65,6 +81,15 @@ class CPT():
         self._parents = {node.label: node for node in parents_list}
         try:
             self.cond_distrib = self.build_cond_distrib(init_dict)  # welcome to the simple affairs' complication office 
+
+            self._distribution_name = 'Conditional'
+            ty_p = list(init_dict.values())[0]
+            if isinstance(ty_p,List):
+                self._distribution_name += ' Categorical'
+            elif isinstance(ty_p,float):
+                self._distribution_name += ' Bernoulli'
+            else:
+                self._distribution_name = ''
         except exceptions.WrongAssignment as exc:
             print(f'The CPT assignment is {exc.args[0]['status']}complete at row {exc.args[0]['row']}')
             print('The CPT will be automatically set to None.') 
@@ -98,12 +123,17 @@ class CPT():
             init_dict[new_row] = value
 
         return init_dict
+    
+    def get_distribution_name(self) -> str:
+        return self._distribution_name
 
-    # WIP: Again, we're assuming bernoullian rv
     def print_cpt(self) -> None:
         for key, value in self.cond_distrib.items():
-            assignments = [f"{node.label}={val}" for node, val in key]
-            print(f"P({self._owner_node_label}=1 | {', '.join(assignments)}) = {value}")
+            assignments = [f"{node.label} = {val}" for node, val in key]
+            plusOne = ''
+            if 'Bernoulli' in self._distribution_name:
+                plusOne = '=1' 
+            print(f"P({self._owner_node_label}{plusOne} | {', '.join(assignments)}) = {value}")
 
     def set_p(self, 
             assignment:Dict[str,int],
