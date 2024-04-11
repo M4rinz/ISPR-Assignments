@@ -1,0 +1,98 @@
+\documentclass[10pt,xcolor={table,dvipsnames}]{beamer} 		% carica automaticamente amsthm, amssymb, amsmath, graphicx
+
+\usepackage[T1]{fontenc}
+%\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+
+\usepackage{mathtools}					% amsmath sotto steroidi
+\usepackage{mathdots}
+
+\usepackage{mathrsfs}					% Per dei caratteri matematici migliori: \mathscr{} e \mathcal{}
+%\usepackage{braket} 					% Per il comando \Set, e altre (poche) cose
+\usepackage[italian]{varioref}			% Per usare il comando \vref{label}, che dà dei collegamenti più dettagliati
+\usepackage{microtype}					% Migliora la tipografia, permettendo ad alcuni elementi di sporgere leggermente
+%\usepackage{textcomp}					% Dovrebbe aggiungere più simboli
+
+\usepackage{relsize}					% Per usare \mathbigger{} ecc
+
+\usepackage{multirow}					% per usare il comando multirow
+\usepackage{tabularx}					% per fare tabelle. Carica il pacchetto array, per gli array.
+\usepackage{arydshln}					% per le linee tratteggiate nelle tabelle
+
+\usepackage[many]{tcolorbox}
+
+\usepackage{hyperref}
+
+\DeclarePairedDelimiter{\absval}{\lvert}{\rvert}
+\DeclarePairedDelimiter{\norma}{\lVert}{\rVert}
+
+%\setcounter{tocdepth}{1}	% profondità dell'indice
+
+	% TEOREMI CUSTOM:
+\theoremstyle{plain}					% Definisce ambienti per Teoremi, esercizi, corollari... Con lo stile adeguato
+	\newtheorem{proposizione}{Proposizione}[section]
+	\newtheorem*{proposizione*}{Proposizione}
+	
+	\newtheorem{teorema}{Teorema}[section]
+	\newtheorem*{teorema*}{Teorema}
+		
+	%\newtheorem{lemma_es}{Lemma}[esercizio]
+	%\newtheorem{lemma}{Lemma}[section]
+	\newtheorem*{lemma*}{Lemma}
+	\newtheorem{corollario}{Corollario}[section]
+
+
+\theoremstyle{definition}				
+	\newtheorem{definizione}{Definizione}[section]%[chapter]
+	\newtheorem*{definizione*}{Definizione}	%definizione non numerata
+	\newtheorem*{notazione}{Notazione}
+
+\theoremstyle{remark}
+	\newtheorem{oss}{Osservazione}[section]
+	\newtheorem*{oss*}{Osservazione}
+	
+	
+% ------------------------- INIZIO CODICE -------------------------
+\usetheme{Madrid}
+%\setbeamercolor{blockcolor}{bg=UniWhite, fg=DMDarkBlue}
+
+\title[ISPR - 4th Assignment]{Assignment 4}
+\subtitle{Bayesian Network implementation} 
+\author[Andrea Marino]{Andrea Marino \small{(matr. 561935)}}
+\institute[DI UniPi]{Università di Pisa, dipartimento di Informatica}
+%\titlegraphic{\includegraphics[width=2cm]{Immagini/cherubino_black.eps}}
+\date{\today}
+
+%\AtBeginSection[] 			% Vedi se è opportuno, in una tesi...			
+%{
+%	\begin{frame}
+%		\frametitle{Sommario}
+%		\tableofcontents[currentsection,subsectionstyle=show/show/hide] 
+%	\end{frame}
+%}
+
+\begin{document}
+	\begin{frame}[plain]
+		\titlepage
+	\end{frame}
+		
+
+\section*{Corpo}
+
+	\begin{frame}{Si faceva così?}{Non ricordo\dots}
+		Ciao
+	\end{frame}
+
+
+    
+    \begin{frame}{Conclusion}
+        We've outlined the structure of the code produced for this assignment, 
+		focusing on the most relevant aspects. 
+		\bigskip
+
+		The code for this assignment is available
+		\href{https://github.com/M4rinz/ISPR-Assignments}{on GitHub}.
+    \end{frame}
+
+\end{document}
+
