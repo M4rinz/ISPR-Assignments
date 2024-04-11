@@ -79,6 +79,7 @@ class CPT():
                 ):
         self._owner_node_label = node_label
         self._parents = {node.label: node for node in parents_list}
+        self._latest_sample = None
         try:
             self.cond_distrib = self.build_cond_distrib(init_dict)  # welcome to the simple affairs' complication office 
 
@@ -150,6 +151,10 @@ class CPT():
 
     def sample(self) -> int:
         def innerSample(p:P) -> int:
+            '''
+            Function that performs the actual sampling
+            (base case)
+            '''
             start = 1
             if isinstance(p,float):
                 p = [1-p, p]
@@ -173,8 +178,11 @@ class CPT():
         # the conditional distribution of the node (as specified by this CPT)
 
         # Since we use frozensets as keys, sampling order doesn't matter
-
+        
+        # create actual key and query the dictionary
         evidence = frozenset(evidence)  
         p = self.cond_distrib[evidence]
 
-        return innerSample(p)
+        # sample from the conditional distribution, storing the result
+        self._latest_sample = innerSample(p)
+        return self._latest_sample
