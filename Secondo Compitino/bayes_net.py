@@ -137,9 +137,9 @@ class BayesNetwork():
         for arc in args: 
             try:
                 #TODO support for arcs given the node's label?
-                tail_ID, head_ID = arc
-                tail_node = [n for n in self._nodes_list if n.ID == tail_ID]
-                head_node = [n for n in self._nodes_list if n.ID == head_ID]
+                t, h = arc
+                tail_node = [n for n in self._nodes_list if (n.ID == t if isinstance(t,int) else n.label == t)]
+                head_node = [n for n in self._nodes_list if (n.ID == h if isinstance(t,int) else n.label == h)]
 
                 len_tail = len(tail_node)
                 len_head = len(head_node)
