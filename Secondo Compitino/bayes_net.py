@@ -64,8 +64,6 @@ class Node():
             distrib_name = None
         if distrib_name is not None:
             if 'Conditional' in distrib_name:
-                #print('The associated random var has '
-                #      f'{distrib_name} distribution described by the following CPT:')
                 print()
                 print('\n'.join(textwrap.wrap(f'The associated random variable has {distrib_name} distribution described by the following CPT:', width=54)))
                 self.distribution.print_cpt()
@@ -168,7 +166,8 @@ class BayesNetwork():
                 #        new_node = Node(label="AUTO_ADDED", node_id = head_ID )
                 #    self.add_nodes(new_node)
 
-                # update forward and backward stars of nodes
+                ## update forward and backward stars of nodes:
+                # get the actual nodes
                 tail_node = tail_node.pop()
                 head_node = head_node.pop()
 
