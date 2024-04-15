@@ -1,6 +1,8 @@
 import textwrap
 
 from typing import List, Callable, Tuple, Dict, Optional, Union
+
+from matplotlib.pylab import f
 import exceptions
 from distributions import Prior, CPT
 
@@ -15,6 +17,11 @@ class Node():
         self.FS = []    # forward star: children
         self.BS = []    # backward star: parents
         self.distribution = distribution
+
+    def __str__(self) -> str:
+        self.print_attributes()
+        return f"Attributes of node {self.ID} with label {self.label}"
+        
 
     def set_id(self, node_id:int) -> None:
         self.ID = node_id
