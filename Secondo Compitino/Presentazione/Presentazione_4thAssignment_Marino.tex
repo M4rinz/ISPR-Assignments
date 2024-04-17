@@ -19,6 +19,7 @@
 \usepackage{multirow}					% per usare il comando multirow
 \usepackage{tabularx}					% per fare tabelle. Carica il pacchetto array, per gli array.
 %\usepackage{arydshln}					% per le linee tratteggiate nelle tabelle
+\usepackage{tikz}
 
 %\usepackage[many]{tcolorbox}
 
@@ -91,7 +92,7 @@
 	\begin{frame}{Code structure}{Description of the project's files}	%RIVEDI!
 		The code for this assignment (well commented) is available
 		\href{https://github.com/M4rinz/ISPR-Assignments}{on GitHub}.
-		In this presentation we'll focus on the most relevant aspects.
+		In this presentation the focus is on the most relevant aspects.
 		\medskip
 
 		\onslide<2->{The bulk of the project is contained in the \texttt{bayes\_net.py}
@@ -192,8 +193,9 @@
 			\item<2-> \texttt{\pdb{self}.label}: to describe (and identify) each node 
 			\item<3-> \texttt{\pdb{self}.FS} and \texttt{\pdb{self}.BS}: the list of
 			(respectively) children and parents of the node
-			\item<4-> \texttt{\pdb{self}.distribution}: the distribution of the r.v.
-			associated to the node. It's an instance of the class \ttteal{Prior}
+			\item<4-> \texttt{\pdb{self}.distribution}: the distribution of the 
+			random variable associated to the node. 
+			It's an instance of the class \ttteal{Prior}
 			or \ttteal{CPT}. 
 		\end{itemize}
 
@@ -250,14 +252,38 @@
 		distribution\dots}
 	\end{frame}
 
-	\begin{frame}{The \texttt{CPT} class 1/2}
+	\begin{frame}{The \texttt{CPT} class}
 		The \ttteal{CPT} class is more complicated than the \ttteal{Prior} one.
+		\smallskip 
 
-		
-	\end{frame}
+		\onslide<2->{The main attribute is \texttt{\pdb{self}.cond\_distrib},
+		which represents the conditional distribution. It's a dictionary with:}
+		\begin{itemize}
+			\item<2-> \textbf{keys} which represent the rows of the CPT. 
+			The keys cover the whole possible instantiations of the conditioning side.
 
-	\begin{frame}{The \texttt{CPT} class 2/2}
-		
+			\onslide<3->{The datatype for a key is 
+			\texttt{\teal{frozenset}[\teal{Tuple}[\teal{Node},\teal{int}]]}.
+			\ttteal{frozenset}s allow the parents' ordering to be irrelevant.
+			This is very helpful for declaration and sampling}
+			\item<4-> \textbf{values}, the parameter(s) \texttt{\plb{p}} of the
+			distribution (like what's in the \ttteal{Prior} class). 
+		\end{itemize}
+
+		\onslide<5->{Main methods:}
+		\begin{itemize}
+			\item<5-> \texttt{\pdb{self}.build\_cond\_distrib}: replaces the 
+			label of each parent from the dictionary passed as argument with
+			the \ttteal{Node} object (for easier sampling)
+			\item<6-> \texttt{\pdb{self}.sample}. Samples (recursively) a 
+			value from each of the parents (up to calling the \texttt{sample}
+			method of the \ttteal{Prior} class), 
+			\onslide<7->{the sampled values are used to "fill up" 
+			the row of the CPT (i.e. fully specify the conditioning side).}
+			\onslide<8->{The parameter \texttt{\plb{p}} of the distribution is 
+			retrieved, and sampling can be performed according to the value(s) of 
+			\texttt{\plb{p}} as described earlier.}
+		\end{itemize}
 	\end{frame}
 
 
@@ -267,16 +293,96 @@
 	\end{frame}
 
 	\begin{frame}{Visual representation of the Network}
-		Qui metto il disegno
+		\begin{center}
+			\begin{figure}
+				\begin{tikzpicture}[scale=0.14]
+					\tikzstyle{every node}+=[inner sep=0pt]
+					\draw [black] (9.5,-13) circle (3);
+					\draw (9.5,-13) node {$S$};
+					\draw [black] (21.6,-13) circle (3);
+					\draw (21.6,-13) node {$Sc$};
+					\draw [black] (21.6,-13) circle (2.4);
+					\draw [black] (60.7,-13) circle (3);
+					\draw (60.7,-13) node {$W$};
+					\draw [black] (60.7,-13) circle (2.4);
+					\draw [black] (34.3,-13) circle (3);
+					\draw (34.3,-13) node {$Ce$};
+					\draw [black] (18.9,-28.2) circle (3);
+					\draw (18.9,-28.2) node {$B$};
+					\draw [black] (27,-42.3) circle (3);
+					\draw (27,-42.3) node {$CH$};
+					\draw [black] (34.3,-25.4) circle (3);
+					\draw (34.3,-25.4) node {$D$};
+					\draw [black] (42.2,-41.8) circle (3);
+					\draw (42.2,-41.8) node {$G$};
+					\draw [black] (40.1,-55.5) circle (3);
+					\draw (40.1,-55.5) node {$Cs$};
+					\draw [black] (60.7,-28.2) circle (3);
+					\draw (60.7,-28.2) node {$Gpc$};
+					\draw [black] (60.7,-41.2) circle (3);
+					\draw (60.7,-41.2) node {$M$};
+					\draw [black] (57.7,-13) -- (37.3,-13);
+					\fill [black] (37.3,-13) -- (38.1,-13.5) -- (38.1,-12.5);
+					\draw [black] (11.08,-15.55) -- (17.32,-25.65);
+					\fill [black] (17.32,-25.65) -- (17.33,-24.71) -- (16.48,-25.23);
+					\draw [black] (21.08,-15.95) -- (19.42,-25.25);
+					\fill [black] (19.42,-25.25) -- (20.06,-24.55) -- (19.07,-24.37);
+					\draw [black] (20.39,-30.8) -- (25.51,-39.7);
+					\fill [black] (25.51,-39.7) -- (25.54,-38.76) -- (24.67,-39.25);
+					\draw [black] (33.11,-28.15) -- (28.19,-39.55);
+					\fill [black] (28.19,-39.55) -- (28.97,-39.01) -- (28.05,-38.61);
+					\draw [black] (29.11,-44.43) -- (37.99,-53.37);
+					\fill [black] (37.99,-53.37) -- (37.78,-52.45) -- (37.07,-53.16);
+					\draw [black] (41.75,-44.77) -- (40.55,-52.53);
+					\fill [black] (40.55,-52.53) -- (41.17,-51.82) -- (40.18,-51.67);
+					\draw [black] (35.6,-28.1) -- (40.9,-39.1);
+					\fill [black] (40.9,-39.1) -- (41,-38.16) -- (40.1,-38.59);
+					\draw [black] (60.7,-31.2) -- (60.7,-38.2);
+					\fill [black] (60.7,-38.2) -- (61.2,-37.4) -- (60.2,-37.4);
+					\draw [black] (58.24,-42.91) -- (42.56,-53.79);
+					\fill [black] (42.56,-53.79) -- (43.51,-53.74) -- (42.94,-52.92);
+					\draw [black] (58.89,-30.59) -- (41.91,-53.11);
+					\fill [black] (41.91,-53.11) -- (42.79,-52.77) -- (41.99,-52.17);
+					\draw [black] (58.44,-14.97) -- (29.26,-40.33);
+					\fill [black] (29.26,-40.33) -- (30.2,-40.18) -- (29.54,-39.43);
+					\draw [black] (32.16,-15.11) -- (21.04,-26.09);
+					\fill [black] (21.04,-26.09) -- (21.96,-25.89) -- (21.25,-25.17);
+				\end{tikzpicture}
+			\label{fig:BNConcert}
+			\caption{\emph{Graphical representation of the concert's Bayesian
+			Network. The nodes with the double circles have a categorical distribution.}}
+		\end{figure}
+		\end{center}
 	\end{frame}
 
     
 \section*{Comments and conclusion}
-    \begin{frame}{Conclusion}
+    \begin{frame}{Conclusion, and comments}
         \textbf{\textcolor{red}{TO FINISH!!}} We've outlined the structure of the code produced for this assignment, 
 		focusing on the most relevant aspects. 
-		
-    \end{frame}
+		\smallskip 
+
+		\onslide<2->{Programming was instructive and intriguing, although not
+		very challenging. Having good data structures and an elaborate 
+		mechanism of bells and whistles revealed to be useful.}
+		\smallskip 
+
+		\onslide<3->{Conceiving the model was very stimulating. 
+		Bayesian Networks look powerful at first sight, giving the 
+		impression of being able to model many phenomena from the real word. 
+		But by working with them, one realizes that they fall short really 
+		soon, and that limitations in terms of expressiveness soon show up.}
+		\smallskip 
+
+		\onslide<4->{One example from the concert BN: the civil engineering 
+		office's response's dependency from the weather is an irrealistic 
+		simplification. More properly, it should depend on a weather forecast. 
+		But it's complicated to model the relation between the actual weather 
+		and the weather forecast in a Bayesian Network: the two variables 
+		are not independent (of course), on the other hand a distribution 
+		conditioned on the true weather is not 
+		a good model (i.e. representation) for the weather forecast.}
+	\end{frame}
 
 \end{document}
 
