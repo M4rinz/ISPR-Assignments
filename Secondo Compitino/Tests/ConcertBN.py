@@ -51,7 +51,7 @@ BN = BayesNetwork([n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11], arcs_list)
 n1.assign_CPT(p = 0.85)                     # la soprintendenza può non dare l'ok con una probabilità del 15%
 n2.assign_CPT(p = [0.8, 0.15, 0.05])        # sound threshold check can be 1 = ok, 2 = too loud, 3 = far too loud
 n3.assign_CPT(p = [0.9, 0.08, 0.02])        # weather has a 90% chance of being good, and 2% of being very bad (summer thunderstorms)
-n4.assign_CPT(p = 0.8)                      # the drummer can be sick with a 20% chance
+n4.assign_CPT(p = 0.85)                     # the drummer can be sick with a 15% chance
 n5.assign_CPT(p = 0.75)                     # The press coverage of the event represents how well has the event been advertised.
                                             # Despite the effort of the promoters, the press coverage has a high chance of being unsatisfactory
 
@@ -59,8 +59,8 @@ n5.assign_CPT(p = 0.75)                     # The press coverage of the event re
 # create the CPT for the civil engineering
 civil_engineer_cpt = {
     frozenset([('weather',1)]) : 0.96,      # With a good weather, the civil engineering office will give the ok with a high chance,
-                                          # but unfortunately it's not the only thing that the office takes into account
-    frozenset([('weather',2)]) : 0.85,      # with the rain, the civil engineer is less likely to give the ok
+                                            # but unfortunately it's not the only thing that the office takes into account (hence the 96%)
+    frozenset([('weather',2)]) : 0.85,      # with the rain, the civil engineering office is less likely to give the ok
     frozenset([('weather',3)]) : 0.70       # A summer thunderstorm gives more problems
 }
 n6.assign_CPT(full_cpt=civil_engineer_cpt)
@@ -75,16 +75,18 @@ for sop, eng, sound in product(range(2), range(2), range(1,4)):
     prob = (
         0.05 +              # base probability        
         sop*0.44 +          # soprintendenza alone contributes by a 44%
-        eng*0.19 +          # civil engineering alone contributes by a 9%
+        eng*0.19 +          # civil engineering alone contributes by a 19%
         round(10*(3-sound)/105,2) +   # sound alone contributes by at most ~19%, and scales linearly
-        0.03*(sop and eng and (sound==1)) +     # in ideal conditions, +4%
-        0.02*(sum([sop,(sound in [1,2]),eng]))  # if any two variables are "favorable", +4%
+        0.04*(sop and eng and (sound==1)) +     # in ideal conditions, +4%
+        0.03*(sum([sop,(sound in [1,2]),eng]))  # if any two variables are "favorable", +3%
     )
     bureaucracy_cpt[frozenset(assignment)] = prob
 '''
-Even if everything is fine, there is still a chance that the event is not authorized
-due to a minor bureaucratic issue of some sort. By the same token, even if the 
-none of the "preconditions" are met, there is a 5% chance that the concert is authorized
+Even if everything is fine, there is still a 1% chance that the event is not 
+authorized due to a minor bureaucratic issue of some sort (not modeled in this BN). 
+
+By the same token, even if the none of the "preconditions" are met, 
+there is a 5% chance that the concert is authorized
 anyway (because, for example, a high-ranking official intervenes)
 '''
 n7.assign_CPT(full_cpt=bureaucracy_cpt)
@@ -158,8 +160,37 @@ for held,gp,people,press in product(range(2),range(2),range(2),range(2)):
 
 n11.assign_CPT(full_cpt=concert_success_cpt)
 
-s = 0
-for _ in range(10000):
-    s += n6.distribution.sample()
 
-s = s/10000
+################################### SAMPLING ###################################
+N_SAMPLES = 10000
+
+
+# Sample the Bayesian Network for ok_bureaucracy
+ok_bureaucracy = 0
+for _ in range(N_SAMPLES):
+    ok_bureaucracy += n7.distribution.sample()
+
+print(f'Out of {N_SAMPLES} samples of the Bayesian Network, {ok_bureaucracy} '
+        'resulted in the authorization of the concert. ')
+print(f'Based on this, the probability of the concert being authorized is {ok_bureaucracy/N_SAMPLES:.3f}')
+print()
+
+# Sample the Bayesian Network for concert_held
+concert_held = 0
+for _ in range(N_SAMPLES):
+    concert_held += n10.distribution.sample()
+
+print(f'Out of {N_SAMPLES} samples of the Bayesian Network, {concert_held} '
+        'resulted in the concert being held. ')
+print(f'Based on this, the probability of the concert being held is {concert_held/N_SAMPLES:.3f}')
+print()
+
+# Sample the Bayesian Network for concert_success
+concert_success = 0
+for _ in range(N_SAMPLES):
+    concert_success += n11.distribution.sample()
+
+print(f'Out of {N_SAMPLES} samples of the Bayesian Network, {concert_success} '
+        'resulted in a successful concert. ')
+print(f'Based on this, the probability of a successful concert is {concert_success/N_SAMPLES:.3f}')
+print()
