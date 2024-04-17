@@ -93,10 +93,10 @@ n7.assign_CPT(full_cpt=bureaucracy_cpt)
 
 # create the CPT for the manyPeople r.v.
 many_people_cpt = {
-    frozenset([('pressCoverage',1)]) : 0.90,    # If the event was very advertised, there is a high chance 
+    frozenset([('pressCoverage',1)]) : 0.92,    # If the event was very advertised, there is a high chance 
                                                 # that many people will have bought a ticket
 
-    frozenset([('pressCoverage',0)]) : 0.75,    # With an unsatisfactory press coverage, 
+    frozenset([('pressCoverage',0)]) : 0.74,    # With an unsatisfactory press coverage, 
                                                 # the chance that many people buy the tickets is lower,
                                                 # but still high enough (becuse the band is famous)
 }

@@ -6,6 +6,7 @@
 
 \usepackage{mathtools}					% amsmath sotto steroidi
 \usepackage{mathdots}
+\usepackage{physics}
 
 \usepackage{mathrsfs}					% Per dei caratteri matematici migliori: \mathscr{} e \mathcal{}
 %\usepackage{braket} 					% Per il comando \Set, e altre (poche) cose
@@ -87,106 +88,171 @@
 
 
 \section*{Code structure}
-	\begin{frame}{Code structure}{Accessory files}
-		The bulk of the project is contained in the \texttt{bayes\_net.py}
-		and \texttt{distributions.py} files.
+	\begin{frame}{Code structure}{Description of the project's files}	%RIVEDI!
+		The code for this assignment (well commented) is available
+		\href{https://github.com/M4rinz/ISPR-Assignments}{on GitHub}.
+		In this presentation we'll focus on the most relevant aspects.
+		\medskip
 
-		\onslide<2->{There are other accessory files, as well as small tests. These are:}
+		\onslide<2->{The bulk of the project is contained in the \texttt{bayes\_net.py}
+		and \texttt{distributions.py} files.}
+		\onslide<3->{The former contains the classes used
+		to define the \emph{structure} of the network, the latter the classes 
+		used to assign \emph{distributions} to the nodes.}
+		\smallskip
+
+		\onslide<4->{There are other accessory files, as well as small tests. These are:}
 		\begin{itemize}
-			\item<2-> \texttt{BNTypes.py}: contains the declarations of the principal 
-			datatypes\footnote{Even if not required by Python,
-			they're helpful for e.g. debugging purposes and code clarity} used for the project. 
-			These are:
-			\begin{itemize}
-				\item<3-> \texttt{\plb{Arc} =
-					\teal{Tuple}[\teal{str}|\teal{int},
-					\teal{str}|\teal{int}]
-					}, for the arcs of the network. 
-					The first element represents the tail node, 
-					the second one the head node. 
-					Either the node's label or its ID can be specified.  
-				\item<4-> \texttt{\plb{P} = \teal{float}|\plb{List}[\teal{float}]}, 
-				the parameters of the distributions (Bernoulli of categorical). 
-				Can be seen as the "column" of the CPT.
-				\item<5-> \texttt{\plb{PassedConditions} = \teal{frozenset}[\plb{List}[\teal{Tuple}[\teal{str},\teal{int}]]]}, 
-				the type of the rows of the CPT. 
-			\end{itemize}
-			\onslide<6->{The last two will be further commented in later sections.}
-			\item<7-> \texttt{exceptions.py}: contains some custom exceptions that are 
+			\item<4-> \texttt{BNTypes.py}: contains the declarations of the principal 
+			datatypes used for the project 
+			(helpful for, e.g., code clarity even if not required by Python)
+			%These are:
+			%\begin{itemize}
+			%	\item<3-> \texttt{\plb{Arc} =
+			%		\teal{Tuple}[\teal{str}|\teal{int},
+			%		\teal{str}|\teal{int}]
+			%		}, for the arcs of the network. 
+			%		The first element represents the tail node, 
+			%		the second one the head node. 
+			%		Either the node's label or its ID can be specified.  
+			%	\item<4-> \texttt{\plb{P} = \teal{float}|\plb{List}[\teal{float}]}, 
+			%	the parameters of the distributions (Bernoulli of categorical). 
+			%	Can be seen as the "column" of the CPT.
+			%	\item<5-> \texttt{\plb{PassedConditions} = \teal{frozenset}[\plb{List}[\teal{Tuple}[\teal{str},\teal{int}]]]}, 
+			%	the type of the rows of the CPT. 
+			%\end{itemize}
+			%\onslide<6->{The last two will be further commented in later sections.}
+			\item<5-> \texttt{exceptions.py}: contains some custom exceptions that are 
 			used for some error management (mainly for debugging purposes)
-			\item<8-> \texttt{Tests} folder: small programs to test the functionality
+			\item<6-> \texttt{Tests} folder: small programs to test the functionality
 			of the classes.
 		\end{itemize}
+		\medskip
+
+		\onslide<7->{A Bayesian Network is an object of the \ttteal{BayesNetwork} class.
+		Inspiration has been taken from the formal definition of a graph 
+		as a pair $(V,E)$ of vertices and edges: the main attributes of the class
+		are a list of nodes and a list of arcs.}
 	\end{frame}
 
 
-\section*{BayesNetwork class}
-	\begin{frame}{The \texttt{BayesNetwork} class 1/2}{Main attributes and methods}
-		To implement a Bayesian Network, I took inspiration from the formal 
-		definition of a graph $G$ as a pair $(V,E)$ of vertices and edges.
-		\smallskip 
+%\section*{BayesNetwork class}
+	%\begin{frame}{The \texttt{BayesNetwork} class 1/2}{Main attributes and methods}
+	%	To implement a Bayesian Network, I took inspiration from the formal 
+	%	definition of a graph $G$ as a pair $(V,E)$ of vertices and edges.
+	%	\smallskip 
+	%
+	%	\onslide<2->{\ttteal{Bayesnetwork}'s main attributes:}
+	%	\begin{itemize}
+	%		\item<2-> \texttt{\pdb{self}.\_nodes\_list}: a list of the nodes in the network.
+	%		Nodes are objects of the class \ttteal{Node} (described later).
+	%		\item<3-> \texttt{\pdb{self}.\_arcs\_list}: a list of the arcs in the network.
+	%	\end{itemize}
+	%
+	%	\onslide<4->{\ttteal{Bayesnetwork}'s main methods:}
+	%	\begin{itemize}
+	%		\item<4-> \texttt{\pdb{self}.add\_nodes}: adds any number of nodes 
+	%		provided as argument to the network.
+	%		\item<5-> \texttt{\pdb{self}.add\_arcs}: adds any number of arcs provided
+	%		as argument to the network. 
+	%
+	%		The tail node is added as a parent of the head node, and the head 
+	%		node is added as a child of the head node. This is done by exploting
+	%		methods of the \ttteal{Node} class. 
+	%		\smallskip
+	%
+	%		The function also checks that arcs are added correctly by the user 
+	%		(e.g. no self loops).
+	%	\end{itemize}
+	%\end{frame}
 
-		\onslide<2->{\ttteal{Bayesnetwork}'s main attributes:}
-		\begin{itemize}
-			\item<2-> \texttt{\pdb{self}.\_nodes\_list}: a list of the nodes in the network.
-			Nodes are objects of the class \ttteal{Node} (described later).
-			\item<3-> \texttt{\pdb{self}.\_arcs\_list}: a list of the arcs in the network.
-		\end{itemize}
-
-		\onslide<4->{\ttteal{Bayesnetwork}'s main methods:}
-		\begin{itemize}
-			\item<4-> \texttt{\pdb{self}.add\_nodes}: adds any number of nodes 
-			provided as argument to the network.
-			\item<5-> \texttt{\pdb{self}.add\_arcs}: adds any number of arcs provided
-			as argument to the network. 
-
-			The tail node is added as a parent of the head node, and the head 
-			node is added as a child of the head node. This is done by exploting
-			methods of the \ttteal{Node} class. 
-			\smallskip
-
-			The function also checks that arcs are added correctly by the user 
-			(e.g. no self loops).
-		\end{itemize}
-	\end{frame}
-
-	\begin{frame}{The \texttt{BayesNetwork} class 2/2}{Main characteristics}
-		If a list of nodes and a list of arcs is passed to the class constructor,
-		a Bayesian Network will be initialized with such nodes and arcs. 
-		Otherwise nodes and arcs can be added at any moment with the aforementioned 
-		methods.
-		\smallskip
-
-		\onslide<2->{Only addition of nodes and arcs is supported. 
-		Methods to safely remove nodes and arcs haven't been provided, as these 
-		delicate operations weren't seen as necessary.}
-		\smallskip
-
-		\textbf{\textcolor{red}{TODO!!}} When inserting an arc, it is checked 
-		that the graph is acyclic.
-	\end{frame}
+	%\begin{frame}{The \texttt{BayesNetwork} class 2/2}{Main characteristics}
+	%	If a list of nodes and a list of arcs is passed to the class constructor,
+	%	a Bayesian Network will be initialized with such nodes and arcs. 
+	%	Otherwise nodes and arcs can be added at any moment with the aforementioned 
+	%	methods.
+	%	\smallskip
+	%
+	%	\onslide<2->{Only addition of nodes and arcs is supported. 
+	%	Methods to safely remove nodes and arcs haven't been provided, as these 
+	%	delicate operations weren't seen as necessary.}
+	%	\smallskip
+	%
+	%	\textbf{\textcolor{red}{TODO!!}} When inserting an arc, it is checked 
+	%	that the graph is acyclic.
+	%\end{frame}
 
 
 \section*{Node class}
-	\begin{frame}{The \texttt{Node} class 1/2}{Main attributes and methods}
-		Attributi e metodi principali
+	\begin{frame}{The \texttt{Node} class}{Main attributes and methods}
+		Each node in the network is an object of the class \ttteal{Node}.
+		
+		\onslide<2->{Main attributes:}
+		\begin{itemize}
+			\item<2-> \texttt{\pdb{self}.label}: to describe (and identify) each node 
+			\item<3-> \texttt{\pdb{self}.FS} and \texttt{\pdb{self}.BS}: the list of
+			(respectively) children and parents of the node
+			\item<4-> \texttt{\pdb{self}.distribution}: the distribution of the r.v.
+			associated to the node. It's an instance of the class \ttteal{Prior}
+			or \ttteal{CPT}. 
+		\end{itemize}
+
+		\onslide<5->{Main methods:}
+		\begin{itemize}
+			\item<5-> \texttt{\pdb{self}.assign\_CPT}: assigns a distribution to 
+			the node. Based on the datatype of the provided initialization, 
+			it will automatically assign a conditional or unconditional distribution 
+			(so it's not necessary to create an object of the class \ttteal{Prior} or \ttteal{CPT})
+			\item<6-> \texttt{\pdb{self}.\_add\_to\_star}: adds a node to the 
+			forward/backward star. When an arc is added to the graph, the 
+			tail/head nodes are automatically added as parents/children through this method
+			\item<7-> \texttt{\pdb{self}.print\_attributes}: prints a summary of the most 
+			relevant information of the node.
+		\end{itemize}
 	\end{frame}
 
-	\begin{frame}{The \texttt{Node} class 2/2}{Other slide?}
-		Altri discorsi, se serve (credo che serva)
-	\end{frame}
+	%\begin{frame}{The \texttt{Node} class 2/2}{Other slide?}
+	%	Altri discorsi, se serve (credo che serva)
+	%\end{frame}
 
 
 \section*{Probabilities}
 	\begin{frame}{Distributions of the nodes' random variables}
-		Una slide un po' spiegona
-	\end{frame}
+		{Broad description, \texttt{Prior} class' sampling method}
+		It's been decided to manage the distributions separately from the 
+		main structure of the network. 
+		\smallskip 
 
-	\begin{frame}{The \texttt{Prior} class}
-		Una slide al massimo. Dai.
+		\onslide<2->{The classes \ttteal{Prior} and \ttteal{CPT} are used to 
+		represent unconditioned and conditioned distributions respectively, and
+		can manage both Bernoullian and categorical random variables.}
+
+		\onslide<3->{The \ttteal{Prior}'s constructor accepts a parameter \texttt{\plb{p}}:
+		if $\mathtt{\plb{p}}\in[0,1]$ then the r.v. is Bernoullian, if \texttt{\plb{p}}
+		is a stochastic vector then the r.v. is categorical (similarly for \ttteal{CPT}).}
+		\smallskip
+
+		\onslide<4->{The two classes have similar methods, the main one being 
+		\texttt{\pdb{self}.sample}. The basic mechanism for sampling is the same
+		behind both classes.}
+
+		\onslide<5->{For the \ttteal{Prior} class: $\mathtt{\plb{p}}=\qty(p_1,\dots,p_N)$.}
+		\begin{enumerate}
+			\item<5-> A random number $r\in[0,1]$ is generated
+			\item<6-> The sampled class is the index $\hat{\imath}\in\qty{1,\dots,N}$
+			s.t. $p_{\hat{\imath}-1}\le r\le p_{\hat{\imath}}$ $(p_0\coloneqq0)$
+			\item<7-> In case $N=1$ (Bernoullian r.v.), the same procedure 
+			is used, with slight modifications to the points above.
+		\end{enumerate}
+
+		\onslide<8->{Other class methods include: methods for returning, 
+		changing the \texttt{\plb{p}} parameter, methods to print the 
+		distribution\dots}
 	\end{frame}
 
 	\begin{frame}{The \texttt{CPT} class 1/2}
+		The \ttteal{CPT} class is more complicated than the \ttteal{Prior} one.
+
 		
 	\end{frame}
 
@@ -194,15 +260,22 @@
 		
 	\end{frame}
 
+
+\section*{The concert Bayesian Network}
+	\begin{frame}{The concert Bayesian Network}{A brief explaination}
+		Un po' il raccontino
+	\end{frame}
+
+	\begin{frame}{Visual representation of the Network}
+		Qui metto il disegno
+	\end{frame}
+
     
+\section*{Comments and conclusion}
     \begin{frame}{Conclusion}
-        We've outlined the structure of the code produced for this assignment, 
+        \textbf{\textcolor{red}{TO FINISH!!}} We've outlined the structure of the code produced for this assignment, 
 		focusing on the most relevant aspects. 
-		\bigskip 
-
-
-		The code for this assignment (well commented) is available
-		\href{https://github.com/M4rinz/ISPR-Assignments}{on GitHub}.
+		
     \end{frame}
 
 \end{document}
