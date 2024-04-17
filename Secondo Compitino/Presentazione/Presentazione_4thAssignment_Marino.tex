@@ -58,10 +58,14 @@
 	
 	% COLORI CUSTOM
 \definecolor{pythonlb}{RGB}{156, 220, 254}
+\definecolor{pythondb}{RGB}{48, 116, 208}
 
 	% COMANDI CUSTOM
+\newcommand{\ttteal}[1]{\texttt{\textcolor{teal}{#1}}}
 \newcommand{\teal}[1]{\textcolor{teal}{#1}}
 \newcommand{\plb}[1]{\textcolor{pythonlb}{#1}}
+\newcommand{\pdb}[1]{\textcolor{pythondb}{#1}}
+
 
 	
 % ------------------------- INIZIO CODICE -------------------------
@@ -81,44 +85,114 @@
 		\titlepage
 	\end{frame}
 
-	\begin{frame}{Code structure}
-		%The code for this assignment (well commented) is available
-		%\href{https://github.com/M4rinz/ISPR-Assignments}{on GitHub}.
-		%In this presentation, only the most essential aspects will be described.
 
-		\onslide<2->{The bulk of the project is contained in the \texttt{bayes\_net.py}
-		and \texttt{distributions.py} files. }
-		\onslide<3->{There are other accessory files, as well as small tests. These are:}
+\section*{Code structure}
+	\begin{frame}{Code structure}{Accessory files}
+		The bulk of the project is contained in the \texttt{bayes\_net.py}
+		and \texttt{distributions.py} files.
+
+		\onslide<2->{There are other accessory files, as well as small tests. These are:}
 		\begin{itemize}
-			\item<3-> \texttt{BNTypes.py}: contains the declarations of the principal 
+			\item<2-> \texttt{BNTypes.py}: contains the declarations of the principal 
 			datatypes\footnote{Even if not required by Python,
-			they're helpful for e.g. debugging purposes and code clarity} used for the project. These are:
+			they're helpful for e.g. debugging purposes and code clarity} used for the project. 
+			These are:
 			\begin{itemize}
-				\item<4-> \texttt{\plb{Arc} =
+				\item<3-> \texttt{\plb{Arc} =
 					\teal{Tuple}[\teal{str}|\teal{int},
 					\teal{str}|\teal{int}]
 					}, for the arcs of the network. 
 					The first element represents the tail node, 
 					the second one the head node. 
 					Either the node's label or its ID can be specified.  
-				\item<5-> \texttt{\plb{P} = \teal{float}|\plb{List}[\teal{float}]}, 
+				\item<4-> \texttt{\plb{P} = \teal{float}|\plb{List}[\teal{float}]}, 
 				the parameters of the distributions (Bernoulli of categorical). 
 				Can be seen as the "column" of the CPT.
-				\item<6-> \texttt{\plb{PassedConditions} = \teal{frozenset}[\plb{List}[\teal{Tuple}[\teal{str},\teal{int}]]]}, 
+				\item<5-> \texttt{\plb{PassedConditions} = \teal{frozenset}[\plb{List}[\teal{Tuple}[\teal{str},\teal{int}]]]}, 
 				the type of the rows of the CPT. 
 			\end{itemize}
-			\onslide<7->{The last two will be further commented in later sections.}
-			\item<8-> \texttt{exceptions.py}: contains some custom exceptions that are 
+			\onslide<6->{The last two will be further commented in later sections.}
+			\item<7-> \texttt{exceptions.py}: contains some custom exceptions that are 
 			used for some error management (mainly for debugging purposes)
-			\item<9-> \texttt{Tests} folder: small programs to test the functionality
+			\item<8-> \texttt{Tests} folder: small programs to test the functionality
 			of the classes.
 		\end{itemize}
 	\end{frame}
 
-	\begin{frame}{The \texttt{BayesNetwork} class}{}
+
+\section*{BayesNetwork class}
+	\begin{frame}{The \texttt{BayesNetwork} class 1/2}{Main attributes and methods}
+		To implement a Bayesian Network, I took inspiration from the formal 
+		definition of a graph $G$ as a pair $(V,E)$ of vertices and edges.
+		\smallskip 
+
+		\onslide<2->{\ttteal{Bayesnetwork}'s main attributes:}
+		\begin{itemize}
+			\item<2-> \texttt{\pdb{self}.\_nodes\_list}: a list of the nodes in the network.
+			Nodes are objects of the class \ttteal{Node} (described later).
+			\item<3-> \texttt{\pdb{self}.\_arcs\_list}: a list of the arcs in the network.
+		\end{itemize}
+
+		\onslide<4->{\ttteal{Bayesnetwork}'s main methods:}
+		\begin{itemize}
+			\item<4-> \texttt{\pdb{self}.add\_nodes}: adds any number of nodes 
+			provided as argument to the network.
+			\item<5-> \texttt{\pdb{self}.add\_arcs}: adds any number of arcs provided
+			as argument to the network. 
+
+			The tail node is added as a parent of the head node, and the head 
+			node is added as a child of the head node. This is done by exploting
+			methods of the \ttteal{Node} class. 
+			\smallskip
+
+			The function also checks that arcs are added correctly by the user 
+			(e.g. no self loops).
+		\end{itemize}
+	\end{frame}
+
+	\begin{frame}{The \texttt{BayesNetwork} class 2/2}{Main characteristics}
+		If a list of nodes and a list of arcs is passed to the class constructor,
+		a Bayesian Network will be initialized with such nodes and arcs. 
+		Otherwise nodes and arcs can be added at any moment with the aforementioned 
+		methods.
+		\smallskip
+
+		\onslide<2->{Only addition of nodes and arcs is supported. 
+		Methods to safely remove nodes and arcs haven't been provided, as these 
+		delicate operations weren't seen as necessary.}
+		\smallskip
+
+		\textbf{\textcolor{red}{TODO!!}} When inserting an arc, it is checked 
+		that the graph is acyclic.
+	\end{frame}
+
+
+\section*{Node class}
+	\begin{frame}{The \texttt{Node} class 1/2}{Main attributes and methods}
+		Attributi e metodi principali
+	\end{frame}
+
+	\begin{frame}{The \texttt{Node} class 2/2}{Other slide?}
+		Altri discorsi, se serve (credo che serva)
+	\end{frame}
+
+
+\section*{Probabilities}
+	\begin{frame}{Distributions of the nodes' random variables}
+		Una slide un po' spiegona
+	\end{frame}
+
+	\begin{frame}{The \texttt{Prior} class}
+		Una slide al massimo. Dai.
+	\end{frame}
+
+	\begin{frame}{The \texttt{CPT} class 1/2}
 		
 	\end{frame}
 
+	\begin{frame}{The \texttt{CPT} class 2/2}
+		
+	\end{frame}
 
     
     \begin{frame}{Conclusion}
