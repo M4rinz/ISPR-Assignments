@@ -21,7 +21,12 @@
 
 %\usepackage[many]{tcolorbox}
 
-\usepackage{hyperref}
+\usepackage{hyperref}					% hyperref improved??
+
+
+
+
+\hypersetup{colorlinks, linkcolor=blue}
 
 \DeclarePairedDelimiter{\absval}{\lvert}{\rvert}
 \DeclarePairedDelimiter{\norma}{\lVert}{\rVert}
@@ -51,6 +56,13 @@
 	\newtheorem{oss}{Osservazione}[section]
 	\newtheorem*{oss*}{Osservazione}
 	
+	% COLORI CUSTOM
+\definecolor{pythonlb}{RGB}{156, 220, 254}
+
+	% COMANDI CUSTOM
+\newcommand{\teal}[1]{\textcolor{teal}{#1}}
+\newcommand{\plb}[1]{\textcolor{pythonlb}{#1}}
+
 	
 % ------------------------- INIZIO CODICE -------------------------
 \usetheme{Madrid}
@@ -69,13 +81,42 @@
 		\titlepage
 	\end{frame}
 
-	\begin{frame}{Si faceva così?}{Non ricordo\dots}
-		The code for this assignment (well commented) is available
-		\href{https://github.com/M4rinz/ISPR-Assignments}{on GitHub}.
-		In this presentation, only the most essential aspects will be described.
-		\medskip
+	\begin{frame}{Code structure}
+		%The code for this assignment (well commented) is available
+		%\href{https://github.com/M4rinz/ISPR-Assignments}{on GitHub}.
+		%In this presentation, only the most essential aspects will be described.
 
+		\onslide<2->{The bulk of the project is contained in the \texttt{bayes\_net.py}
+		and \texttt{distributions.py} files. }
+		\onslide<3->{There are other accessory files, as well as small tests. These are:}
+		\begin{itemize}
+			\item<3-> \texttt{BNTypes.py}: contains the declarations of the principal 
+			datatypes\footnote{Even if not required by Python,
+			they're helpful for e.g. debugging purposes and code clarity} used for the project. These are:
+			\begin{itemize}
+				\item<4-> \texttt{\plb{Arc} =
+					\teal{Tuple}[\teal{str}|\teal{int},
+					\teal{str}|\teal{int}]
+					}, for the arcs of the network. 
+					The first element represents the tail node, 
+					the second one the head node. 
+					Either the node's label or its ID can be specified.  
+				\item<5-> \texttt{\plb{P} = \teal{float}|\plb{List}[\teal{float}]}, 
+				the parameters of the distributions (Bernoulli of categorical). 
+				Can be seen as the "column" of the CPT.
+				\item<6-> \texttt{\plb{PassedConditions} = \teal{frozenset}[\plb{List}[\teal{Tuple}[\teal{str},\teal{int}]]]}, 
+				the type of the rows of the CPT. 
+			\end{itemize}
+			\onslide<7->{The last two will be further commented in later sections.}
+			\item<8-> \texttt{exceptions.py}: contains some custom exceptions that are 
+			used for some error management (mainly for debugging purposes)
+			\item<9-> \texttt{Tests} folder: small programs to test the functionality
+			of the classes.
+		\end{itemize}
+	\end{frame}
 
+	\begin{frame}{The \texttt{BayesNetwork} class}{}
+		
 	\end{frame}
 
 
@@ -83,8 +124,11 @@
     \begin{frame}{Conclusion}
         We've outlined the structure of the code produced for this assignment, 
 		focusing on the most relevant aspects. 
+		\bigskip 
 
-		
+
+		The code for this assignment (well commented) is available
+		\href{https://github.com/M4rinz/ISPR-Assignments}{on GitHub}.
     \end{frame}
 
 \end{document}
