@@ -177,11 +177,17 @@ class BayesNetwork():
                 tail_node = tail_node.pop()
                 head_node = head_node.pop()
 
-                tail_node.add_child(head_node)   
-                head_node.add_parent(tail_node)
+                # check whether the arc creates a cycle in the network
+                if not self._check_oriented_cycles(tail_node,head_node):
+                    tail_node.add_child(head_node)   
+                    head_node.add_parent(tail_node)
 
-                # update list of arcs
-                self._arcs_list.append(arc)
+                    # update list of arcs
+                    self._arcs_list.append(arc)
+                else:
+                    print(f"The arc from node {tail_node.label} to node {head_node.label}"
+                          " creates an oriented cycle in the graph. This is not allowed.")
+                    print("This arc will be ignored.")
             except exceptions.InvalidArcException as exc:
                 print(f'Caught exception with message: {exc}')
                 print('The arc will be ignored')
@@ -189,8 +195,31 @@ class BayesNetwork():
             except exceptions.DuplicateNodeIDError as exc:
                 print(exc)
                 print("How do you want to deal with it?")
-                #TODO deal with it
+                #TODO deal with it?
 
     
-    #def check_oriented_loops(self) -> bool:
-        # Let's avoid it, maybe
+    def _check_oriented_cycles(self,
+                            tail_node:Node,
+                            head_node:Node ) -> bool:
+        """Checks if the newly added arc between tail_node and
+        head_node creates a loop in the graph
+
+        Args:
+            tail_node (Node): the node from which the arc exits
+            head_node (Node): the node in which the arc enters
+
+        Returns:
+            bool: True if the graph has become cyclic
+        """
+        visited = set()
+        stack = [head_node]
+
+        while stack:
+            node = stack.pop()
+            if node == tail_node:
+                return True
+            if node not in visited:
+                visited.add(node)
+                stack.extend(child for child in node.FS if child not in visited)
+        return False    
+        
