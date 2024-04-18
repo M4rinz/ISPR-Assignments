@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 import exceptions
 
 from BNTypes import P, PassedConditions
@@ -46,7 +46,7 @@ class Prior():
         else:
             for i, p in enumerate(self._pvec, start=1):
                 print(f"P(X={i}) = {p}")
-    
+
     def sample(self) -> int:
         """Categorical prior: samples from the categorical distribution
             according to the classes' probabilities
@@ -149,7 +149,9 @@ class CPT():
         cpt_row = frozenset(cpt_row)
         return self.cond_distrib[cpt_row]
 
-    def sample(self) -> int:
+    def sample_under_evidence(self,
+                                ancestors_evidence:Optional[List[Tuple[str,int]]] = []
+                                ) -> int:
         def innerSample(p:P) -> int:
             '''
             Function that performs the actual sampling
@@ -166,10 +168,37 @@ class CPT():
                     return i
                 prev += p_i
 
-        evidence = []
+        # get ancestors' labels
+        passed_ancestors_labels = [label for label, _ in ancestors_evidence]
+        evidence = ancestors_evidence
         for parent in self._parents.values():
-            parent_sample = parent.distribution.sample()    # sample from the parent's distribution. 
-                                                            # This should trigger a recursive call
+            if parent.label not in passed_ancestors_labels:
+
+                # problem: we have to keep track of the ancestors! 
+                # We have to remove the "used up" ancestors (otherwise sampling breaks)
+                def backward_check(parents, reached) -> set:
+                    if parents == []:
+                        return set()
+                    else:
+                        for parent in parents:
+                            if reached < passed_ancestors_labels:
+                                if parent.label in passed_ancestors_labels and parent.label not in reached:
+                                    reached.add(parent.label)
+                                reached = reached.union(backward_check(parent.BS,reached))
+                        return reached
+                
+                filtered_ancestors_labels = list(backward_check(parent.BS, set()))
+                ancestors_evidence = [(label, assn) for label, assn in ancestors_evidence if label in filtered_ancestors_labels]
+
+                # sample from the parent's distribution.
+                # This should trigger a recursive call
+                if isinstance(parent.distribution,CPT):
+                    parent_sample = parent.distribution.sample_under_evidence(ancestors_evidence) 
+                else:
+                    parent_sample = parent.distribution.sample()
+            else:
+                # Hopefully there's only one
+                parent_sample = list(filter(lambda elem: elem[0] == parent.label, ancestors_evidence))[0]
             # create a tuple with the outcome and add it to the 
             # evidence we have
             evidence.append((parent, parent_sample))
@@ -186,3 +215,7 @@ class CPT():
         # sample from the conditional distribution, storing the result
         self._latest_sample = innerSample(p)
         return self._latest_sample
+
+    def sample(self) -> int:
+        return self.sample_under_evidence(ancestors_evidence=[])
+
