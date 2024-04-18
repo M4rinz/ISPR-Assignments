@@ -407,15 +407,30 @@
 
 	\begin{frame}{Sampling from the concert's network}
 		{Result of the sampling, and some further comment}
-		
-		\textbf{\textcolor{red}{TO FINISH!!}}
 
 		$10000$ samples have been drawn from the distributions of the 
-		\texttt{bureaucracy}, \texttt{concert\_held} and \texttt{concert\_success}
-		random variables. 
+		\texttt{bureaucracy} ($B$), \texttt{concert\_held} ($CH$) and 
+		\texttt{concert\_success} ($Cs$) random variables. 
+		\smallskip 
 
-		The outcome was: $\mathbb{P}\left(B\mid S,Sc,Ce\right)=0.878$
+		\onslide<2->{The outcome was:
+		\begin{gather*}
+			\mathbb{P}\left(B=1\right)=\mathbb{P}\left(B=1\mid S,Sc,Ce\right) \approx 0.881 \\
+			\mathbb{P}\left(CH=1\right)=\mathbb{P}\left(CH=1\mid B,D,W\right) \approx 0.821 \\
+			\mathbb{P}\left(Cs=1\right)=\mathbb{P}\left(Cs=1\mid CH,G,M,Gpc\right) \approx 0.418 
+		\end{gather*}}
 
+		\onslide<3->{As it was expected, the concert is very likely to be authorized by the 
+		bureaucracy, but the probability\footnote{According to the 
+		samples, of course (that is, sampling gives an estimation of the true  marginal distribution)} 
+		of the concert being held is lower than that of the concert
+		being authorized.} \onslide<3->{This is because the drummer being sick
+		could lead the organizers to cancel the concert (with an increasing 
+		probability, according to how bad the weather is).} 
+
+		%\begin{equation*}
+		%	\qty(0.07+0.6\cdot B+D\cdot\qty(0.29\cdot B + 0.13\cdot \qty(1-B)))^{\frac{W+3}{4}}
+		%\end{equation*}
 	\end{frame}
     
 \section*{Comments and conclusion}
