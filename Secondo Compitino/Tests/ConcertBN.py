@@ -83,11 +83,13 @@ for sop, eng, sound in product(range(2), range(2), range(1,4)):
     bureaucracy_cpt[frozenset(assignment)] = prob
 '''
 Even if everything is fine, there is still a 1% chance that the event is not 
-authorized due to a minor bureaucratic issue of some sort (not modeled in this BN). 
+authorized due to a minor bureaucratic issue of some sort 
+(not explicitely modeled in this BN). 
 
-By the same token, even if the none of the "preconditions" are met, 
+By the same token, even if none of the "preconditions" are met, 
 there is a 5% chance that the concert is authorized
-anyway (because, for example, a high-ranking official intervenes)
+anyway (because, for example, a high-ranking official or polititian
+intervenes in favour of the concert's promoters)
 '''
 n7.assign_CPT(full_cpt=bureaucracy_cpt)
 
@@ -139,7 +141,8 @@ lack of the proper authorizations.
 
 All in all, the formula inside the prob variable has been hand-crafted
 to return the desired results, still witholding some logic.
-In particular, the probability of success conditioned to ideal condition is 96%.
+In particular, the probability of success conditioned to ideal condition is 96%
+(not 100% because, of course, there can be an unlucky event ruining everything).
 '''
 n10.assign_CPT(full_cpt=concert_held_cpt)
 

@@ -10,12 +10,13 @@
 
 \usepackage{mathrsfs}					% Per dei caratteri matematici migliori: \mathscr{} e \mathcal{}
 %\usepackage{braket} 					% Per il comando \Set, e altre (poche) cose
-\usepackage[italian]{varioref}			% Per usare il comando \vref{label}, che dà dei collegamenti più dettagliati
+\usepackage[english]{varioref}			% Per usare il comando \vref{label}, che dà dei collegamenti più dettagliati
 \usepackage{microtype}					% Migliora la tipografia, permettendo ad alcuni elementi di sporgere leggermente
 %\usepackage{textcomp}					% Dovrebbe aggiungere più simboli
 
 \usepackage{relsize}					% Per usare \mathbigger{} ecc
 
+\usepackage{booktabs}					% taBELLE
 \usepackage{multirow}					% per usare il comando multirow
 \usepackage{tabularx}					% per fare tabelle. Carica il pacchetto array, per gli array.
 %\usepackage{arydshln}					% per le linee tratteggiate nelle tabelle
@@ -287,15 +288,64 @@
 	\end{frame}
 
 
-\section*{The concert Bayesian Network}
+\section*{The concert Bayesian Network 1/2}
 	\begin{frame}{The concert Bayesian Network}{A brief explaination}
-		Un po' il raccontino
+		The chosen example models (some aspects of) a process that 
+		leads to the approval of a concert for a summer festival, as 
+		well as the successfulness of the event, considering some 
+		influencing factors. 
+		\smallskip 
+
+		\onslide<2->{The table~\ref{tab:BNsummary} lists the nodes in the 
+		network, summarizing the essential interpretational aspects.}
+		\smallskip 
+
+		\onslide<3->{Let's highlight here a few key ideas (a full discussion 
+		is in the \texttt{ConcertBN.py} file):}
+		\begin{itemize}
+			\item<3-> The concert can't be a success if it's not held. Therefore
+			$\mathbb{P}\left(Cs=1\mid CH=0,\dots\right)=0$
+			\item<4-> The parameter of the \texttt{bureaucracy} r.v.'s distribution is given 
+			by a formula that promotes the joint positive responses of multiple parents' r.v.s
+			\item<5-> The parameter of the \texttt{concert\_held} r.v. is given by a complicated 
+			formula that is heavily influenced by the bureaucracy (but the lack of authorization
+			doesn't prevent the concert from happening)
+			\item<6-> The chance of the concert being successful is much higher if there are 
+			\emph{both} many people and the performance was good.
+		\end{itemize}
+	\end{frame}
+
+	\begin{frame}{The concert Bayesian Network 2/2}{Summarizing table}
+		\begin{table}[ht]
+			\caption{\emph{A summary of the concert Bayesian Network.}}% In the "Law" column:
+			%B $\equiv$ Bernoullian r.v., C $\equiv$ categorical.}}
+			\label{tab:BNsummary}
+			\begin{tabularx}{\textwidth}{cccX}
+				\toprule
+				Acr. & Name & Law & brief explaination\\
+				\midrule
+				$S$ & Soprintendenza & B & An important office\\
+				$Sc$ & Sound Check & C & The sound must respect the city's rules\\
+				$W$ & Weather & C & Can be warm, rainy or stormy \\
+				$Ce$ & Civil Engineering & B & Assesses the event's safety, given weather\\
+				$B$ & Bureaucracy & B & Releases authorization given the reports\\
+				$D$ & Drummer & B & Could be replaced due to health issues\\
+				$CH$ & Concert held & B & The concert might be canceled due to (e.g.) extreme weather, lack 
+											of authorization\\
+				$G$ & Good performance & B & Playing without the drummer reduces the chance of a good performance\\
+				$Gpc$ & Good press coverage & B & If the concert's been well advertised\\
+				$M$ & Many people & B & Effective advertising increases the 
+										likelihood of people attending the concert.\\
+				$Cs$ & Concert success & B & Depends on, e.g., the band's performance\\
+				\bottomrule
+			\end{tabularx}
+		\end{table}
 	\end{frame}
 
 	\begin{frame}{Visual representation of the Network}
 		\begin{center}
 			\begin{figure}
-				\begin{tikzpicture}[scale=0.14]
+				\begin{tikzpicture}[scale=0.13]
 					\tikzstyle{every node}+=[inner sep=0pt]
 					\draw [black] (9.5,-13) circle (3);
 					\draw (9.5,-13) node {$S$};
@@ -350,15 +400,27 @@
 				\end{tikzpicture}
 			\label{fig:BNConcert}
 			\caption{\emph{Graphical representation of the concert's Bayesian
-			Network. The nodes with the double circles have a categorical distribution.}}
+			Network. The doubly-circled nodes have a categorical distribution.}}
 		\end{figure}
 		\end{center}
 	\end{frame}
 
+	\begin{frame}{Sampling from the concert's network}
+		{Result of the sampling, and some further comment}
+		
+		\textbf{\textcolor{red}{TO FINISH!!}}
+
+		$10000$ samples have been drawn from the distributions of the 
+		\texttt{bureaucracy}, \texttt{concert\_held} and \texttt{concert\_success}
+		random variables. 
+
+		The outcome was: $\mathbb{P}\left(B\mid S,Sc,Ce\right)=0.878$
+
+	\end{frame}
     
 \section*{Comments and conclusion}
     \begin{frame}{Conclusion, and comments}
-        \textbf{\textcolor{red}{TO FINISH!!}} We've outlined the structure of the code produced for this assignment, 
+        We've outlined the structure of the code produced for this assignment, 
 		focusing on the most relevant aspects. 
 		\smallskip 
 
@@ -374,9 +436,10 @@
 		soon, and that limitations in terms of expressiveness soon show up.}
 		\smallskip 
 
-		\onslide<4->{One example from the concert BN: the civil engineering 
-		office's response's dependency from the weather is an irrealistic 
-		simplification. More properly, it should depend on a weather forecast. 
+		\onslide<4->{One example from the concert Bayesian Network:
+		the civil engineering office's response's dependency 
+		from the weather is an irrealistic simplification. 
+		More properly, it should depend on a weather forecast. 
 		But it's complicated to model the relation between the actual weather 
 		and the weather forecast in a Bayesian Network: the two variables 
 		are not independent (of course), on the other hand a distribution 

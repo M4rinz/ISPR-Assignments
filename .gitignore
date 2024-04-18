@@ -165,7 +165,7 @@ cython_debug/
 
 
 
-# LaTeX - related .gitignore
+######################### LaTeX - related .gitignore #########################
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
