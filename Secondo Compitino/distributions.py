@@ -170,7 +170,7 @@ class CPT():
 
         # get ancestors' labels
         passed_ancestors_labels = [label for label, _ in ancestors_evidence]
-        evidence = ancestors_evidence
+        evidence = [] # ancestors_evidence
         for parent in self._parents.values():
             if parent.label not in passed_ancestors_labels:
 
@@ -197,8 +197,10 @@ class CPT():
                 else:
                     parent_sample = parent.distribution.sample()
             else:
-                # Hopefully there's only one
-                parent_sample = list(filter(lambda elem: elem[0] == parent.label, ancestors_evidence))[0]
+                # We get from the ancestors_evidence the tuple relative 
+                # to the parent that we're focusing on at this iteration (Hopefully there's only one)
+                parent_sample_tuple = list(filter(lambda elem: elem[0] == parent.label, ancestors_evidence))[0]
+                parent_sample = parent_sample_tuple[1]
             # create a tuple with the outcome and add it to the 
             # evidence we have
             evidence.append((parent, parent_sample))
