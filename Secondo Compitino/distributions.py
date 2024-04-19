@@ -13,6 +13,7 @@ class Prior():
         else:
             print("Warning: invalid datatype for probability masses")
             
+        self._latest_sample = None
         self.set_pvec(p)
 
     def set_pvec(self, new_p:P) -> None:
@@ -150,7 +151,7 @@ class CPT():
         return self.cond_distrib[cpt_row]
 
     def sample_under_evidence(self,
-                                ancestors_evidence:Optional[List[Tuple[str,int]]] = []
+                                ancestors_evidence:List[Tuple[str,int]] = []
                                 ) -> int:
         def innerSample(p:P) -> int:
             '''
@@ -165,6 +166,7 @@ class CPT():
             prev = 0 
             for i, p_i in enumerate(p,start):
                 if r < p_i + prev:
+                    self._latest_sample = i
                     return i
                 prev += p_i
 
@@ -181,7 +183,7 @@ class CPT():
                         return set()
                     else:
                         for parent in parents:
-                            if reached < passed_ancestors_labels:
+                            if reached < set(passed_ancestors_labels):
                                 if parent.label in passed_ancestors_labels and parent.label not in reached:
                                     reached.add(parent.label)
                                 reached = reached.union(backward_check(parent.BS,reached))
