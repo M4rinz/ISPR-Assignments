@@ -132,7 +132,7 @@
 		\medskip
 
 		\onslide<7->{A Bayesian Network is an object of the \ttteal{BayesNetwork} class.
-		Inspiration has been taken from the formal definition of a graph 
+		Inspiration has been drawn from the formal definition of a graph 
 		as a pair $(V,E)$ of vertices and edges: the main attributes of the class
 		are a list of nodes and a list of arcs.}
 	\end{frame}
@@ -203,8 +203,8 @@
 		\onslide<5->{Main methods:}
 		\begin{itemize}
 			\item<5-> \texttt{\pdb{self}.assign\_CPT}: assigns a distribution to 
-			the node. Based on the datatype of the provided initialization, 
-			it will automatically assign a conditional or unconditional distribution 
+			the node. It will automatically assign a conditional or 
+			unconditional distribution, based on the datatype of the provided initialization 
 			(so it's not necessary to create an object of the class \ttteal{Prior} or \ttteal{CPT})
 			\item<6-> \texttt{\pdb{self}.\_add\_to\_star}: adds a node to the 
 			forward/backward star. When an arc is added to the graph, the 
@@ -243,7 +243,7 @@
 		\begin{enumerate}
 			\item<5-> A random number $r\in[0,1]$ is generated
 			\item<6-> The sampled class is the index $\hat{\imath}\in\qty{1,\dots,N}$
-			s.t. $p_{\hat{\imath}-1}\le r\le p_{\hat{\imath}}$ $(p_0\coloneqq0)$
+			s.t. $p_{\hat{\imath}-1}\le r < p_{\hat{\imath}}$ $(p_0\coloneqq0)$
 			\item<7-> In case $N=1$ (Bernoullian r.v.), the same procedure 
 			is used, with slight modifications to the points above.
 		\end{enumerate}
@@ -335,7 +335,7 @@
 				$G$ & Good performance & B & Playing without the drummer reduces the chance of a good performance\\
 				$Gpc$ & Good press coverage & B & If the concert's been well advertised\\
 				$M$ & Many people & B & Effective advertising increases the 
-										likelihood of people attending the concert.\\
+										likelihood of people attending the concert\\
 				$Cs$ & Concert success & B & Depends on, e.g., the band's performance\\
 				\bottomrule
 			\end{tabularx}
@@ -447,7 +447,7 @@
 		the civil engineering office's response's dependency 
 		from the weather is an irrealistic simplification. 
 		More properly, it should depend on a weather forecast. 
-		But it's complicated to model the relation between the actual weather 
+		But it's complicated to model the relationship between the actual weather 
 		and the weather forecast in a Bayesian Network: the two variables 
 		are not independent (of course), on the other hand a distribution 
 		conditioned on the true weather is not 
