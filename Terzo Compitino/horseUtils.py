@@ -1,11 +1,66 @@
-import torch
-import torch.nn as nn
+import os
+import numpy as np
 from typing import List, Tuple
 
+import torch
+from torch import nn
+from torch.utils.data import Dataset
+from torchvision.io import read_image
+from torchvision.transforms import Lambda
+
+HORSE_PATH = os.path.join("","../Primo Compitino/weizmann_horse_db/horse/")
+MASK_PATH = os.path.join("","../Primo Compitino/weizmann_horse_db/mask/")
+
+class HorseDataset(Dataset):
+    def __init__(self, 
+                 image_path=HORSE_PATH,
+                 mask_path=MASK_PATH,
+                 transform=Lambda(lambda img: img/255), # normalize pixel values
+                 target_transform=None,):
+        self.img_dir = image_path
+        self.mask_dir = mask_path
+        self.transform = transform
+        self.target_transform = target_transform
+
+    def __len__(self):
+        # We know that the answer is 327 but let's make it
+        # more general and structured
+        return len(os.listdir(self.img_dir))
+
+    def __getitem__(self, idx):
+        img_path, mask_path = self._horsePath(idx+1)
+        img = read_image(img_path)      
+        mask = read_image(mask_path)  
+        img = img.float()
+        mask = mask.float() # convert to float 
+        if self.transform:
+            img = self.transform(img)
+        if self.target_transform:
+            mask = self.target_transform(mask)
+        return img, mask
+    
+    def __iter__(self):
+        for i in range(len(self)):
+            yield self.__getitem__(i)    
+    
+    def _horsePath(self, h:int):
+        '''
+        Returns the path to the horse image
+        whose number (in the filename) is h
+        '''
+        number = "0"*(2-int(np.log10(h)))+str(h)
+        imgname = "horse" + number + ".png"
+        img_path = self.img_dir + imgname
+        mask_path = self.mask_dir + imgname
+        return img_path, mask_path
+    
+
+
+# The networks
 class HorseshoeEncoder(nn.Module):
     def __init__(self,
-                 in_channels:int=3,
-                 architecture:List[Tuple]=[(2,16),(2,32),(3,64),(3,128),(3,128)],) -> None:
+                 architecture:List[Tuple]=[(2,16),(2,32),(3,64),(3,128),(3,128)],
+                 in_channels:int=3,) -> None:
         super(HorseshoeEncoder, self).__init__()
 
         def conv_layer(in_channels, out_channels, *args, **kwargs):
@@ -47,11 +102,11 @@ class HorseshoeEncoder(nn.Module):
         x = self.conv1x1(x)
 
         return x, pooling_indices, input_sizes
-
+    
 class HorseshoeDecoder(nn.Module):
     def __init__(self,
-                 out_channels:int=1,
-                 architecture:List[Tuple]=[(2,16),(2,32),(3,64),(3,128),(3,128)],) -> None:
+                 architecture:List[Tuple]=[(2,16),(2,32),(3,64),(3,128),(3,128)],
+                 out_channels:int=1,) -> None:
         super(HorseshoeDecoder, self).__init__()
 
         def transp_conv_layer(in_channels, out_channels, *args, **kwargs):
@@ -89,10 +144,11 @@ class HorseshoeDecoder(nn.Module):
 
         return x
     
+
 class HorseshoeNetwork(nn.Module):
     def __init__(self,
-                 in_channels=3,
-                 out_channels=1,
+                 in_channels:int=3,
+                 out_channels:int=1,
                  architecture:List[Tuple]=[(2,16),(2,32),(3,64),(3,128),(3,128)],):
         super(HorseshoeNetwork, self).__init__()
 
@@ -112,28 +168,3 @@ class HorseshoeNetwork(nn.Module):
         # Final sigmoid (classification)
         x = torch.sigmoid(x)
         return x
-
-
-# Test with an input image tensor of shape [1, 3, 568, 800]
-img = torch.randn(1, 3, 568, 800)
-
-# Initialize the encoder and decoder with the specified architectures
-encoder = HorseshoeEncoder(architecture=[(2, 16), (2, 32)])
-decoder = HorseshoeDecoder(architecture=[(2, 16), (2, 32)])
-
-# Move to device if necessary (for example, GPU)
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-img = img.to(device)
-encoder = encoder.to(device)
-decoder = decoder.to(device)
-
-# Pass the input through the encoder
-encoded_img, pooling_indices, input_sizes = encoder(img)
-
-# Pass the encoded image through the decoder
-decoded_img = decoder(encoded_img, pooling_indices, input_sizes)
-
-# Check the shape of the output
-print(f"Original shape: {img.shape}")
-print(f"Encoded shape: {encoded_img.shape}")
-print(f"Decoded shape: {decoded_img.shape}")
