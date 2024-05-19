@@ -3,6 +3,8 @@ import numpy as np
 from typing import List, Tuple
 
 import torch
+import torch.nn.functional as F
+
 from torch import nn
 from torch.utils.data import Dataset
 from torchvision.io import read_image
@@ -56,7 +58,7 @@ class HorseDataset(Dataset):
     
 
 
-# The networks
+# --------------------------- The networks ---------------------------
 class HorseshoeEncoder(nn.Module):
     def __init__(self,
                  architecture:List[Tuple]=[(2,16),(2,32),(3,64),(3,128),(3,128)],
@@ -106,7 +108,7 @@ class HorseshoeEncoder(nn.Module):
 class HorseshoeDecoder(nn.Module):
     def __init__(self,
                  architecture:List[Tuple]=[(2,16),(2,32),(3,64),(3,128),(3,128)],
-                 out_channels:int=1,) -> None:
+                 out_channels:int=2,) -> None:
         super(HorseshoeDecoder, self).__init__()
 
         def transp_conv_layer(in_channels, out_channels, *args, **kwargs):
@@ -148,7 +150,7 @@ class HorseshoeDecoder(nn.Module):
 class HorseshoeNetwork(nn.Module):
     def __init__(self,
                  in_channels:int=3,
-                 out_channels:int=1,
+                 out_channels:int=2,
                  architecture:List[Tuple]=[(2,16),(2,32),(3,64),(3,128),(3,128)],):
         super(HorseshoeNetwork, self).__init__()
 
@@ -165,6 +167,6 @@ class HorseshoeNetwork(nn.Module):
         # Decoding
         x = self.decoder(x, pooling_indices, input_sizes)
 
-        # Final sigmoid (classification)
-        x = torch.sigmoid(x)
+        # Final softmax (classification)
+        x = F.softmax(x, dim=1)
         return x
