@@ -1,0 +1,355 @@
+\documentclass[10pt,xcolor={table,dvipsnames}]{beamer} 		% carica automaticamente amsthm, amssymb, amsmath, graphicx
+
+\usepackage[T1]{fontenc}
+%\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+
+\usepackage{mathtools}					% amsmath sotto steroidi
+\usepackage{mathdots}
+\usepackage{physics}
+
+\usepackage{bm}
+\usepackage{anyfontsize}
+
+\usepackage{xparse}
+
+\usepackage{mathrsfs}					% Per dei caratteri matematici migliori: \mathscr{} e \mathcal{}
+%\usepackage{braket} 					% Per il comando \Set, e altre (poche) cose
+\usepackage[italian]{varioref}			% Per usare il comando \vref{label}, che dà dei collegamenti più dettagliati
+\usepackage{microtype}					% Migliora la tipografia, permettendo ad alcuni elementi di sporgere leggermente
+%\usepackage{textcomp}					% Dovrebbe aggiungere più simboli
+
+\usepackage{relsize}					% Per usare \mathbigger{} ecc
+
+\usepackage{multirow}					% per usare il comando multirow
+\usepackage{tabularx}					% per fare tabelle. Carica il pacchetto array, per gli array.
+\usepackage{arydshln}					% per le linee tratteggiate nelle tabelle
+
+\usepackage[many]{tcolorbox}
+
+
+\DeclarePairedDelimiter{\absval}{\lvert}{\rvert}
+\DeclarePairedDelimiter{\norma}{\lVert}{\rVert}
+
+%\setcounter{tocdepth}{1}	% profondità dell'indice
+
+	% TEOREMI CUSTOM:
+\theoremstyle{plain}					% Definisce ambienti per Teoremi, esercizi, corollari... Con lo stile adeguato
+	\newtheorem{proposizione}{Proposizione}[section]
+	\newtheorem*{proposizione*}{Proposizione}
+	
+	\newtheorem{teorema}{Teorema}[section]
+	\newtheorem*{teorema*}{Teorema}
+		
+	%\newtheorem{lemma_es}{Lemma}[esercizio]
+	%\newtheorem{lemma}{Lemma}[section]
+	\newtheorem*{lemma*}{Lemma}
+	\newtheorem{corollario}{Corollario}[section]
+
+
+\theoremstyle{definition}				
+	\newtheorem{definizione}{Definizione}[section]%[chapter]
+	\newtheorem*{definizione*}{Definizione}	%definizione non numerata
+	\newtheorem*{notazione}{Notazione}
+
+\theoremstyle{remark}
+	\newtheorem{oss}{Observation}[section]
+	\newtheorem*{oss*}{Observation}
+	
+
+	% COMANDI CUSTOM:
+
+% Let's try this... 
+\NewDocumentCommand{\R}{g g}{
+	\IfNoValueTF{#1}
+		{\mathbb{R}} % print \mathbb{R} when no arguments are provided
+		{
+		\mathbb{R}^{
+			\IfNoValueTF{#2}
+			{#1}	% print \mathbb{R}^{#1} if only one argument is provided
+			{#1 \times #2} % else prints \mathbb{R}^{#1\times #2}
+		}
+		}
+	}	
+
+\newcommand{\Diag}[1]{\operatorname{Diag}\left(#1\right)}
+\newcommand{\iu}{\dot{\imath}}
+
+	
+% ------------------------- INIZIO CODICE -------------------------
+\usetheme{Madrid}
+
+
+\title[ISPR Assignment 4]{AntisymmetricRNN: a dynamical systems view on RNNs}	%ovviamente è provvisorio
+\subtitle{Intelligent Systems for Pattern Recognition\\ 4th Assignment} 
+\author[Andrea Marino]{Andrea Marino {\smaller (matr. 561935)}}
+\institute[DI UniPi]{Università di Pisa}
+%\titlegraphic{\includegraphics[width=2cm]{Immagini/cherubino_black.eps}}
+\date{\today}
+
+%\AtBeginSection[] 			% Vedi se è opportuno, in una tesi...			
+%{
+%	\begin{frame}
+%		\frametitle{Sommario}
+%		\tableofcontents[currentsection,subsectionstyle=show/show/hide] 
+%	\end{frame}
+%}
+
+\begin{document}
+	\begin{frame}[plain]
+		\titlepage
+	\end{frame}
+	
+%\section*{Sommario}
+%	\setcounter{tocdepth}{1}
+%	\begin{frame}
+%		\frametitle{Sommario}
+%		\tableofcontents
+%	\end{frame}
+%	
+%	\setcounter{tocdepth}{2}
+	\begin{frame}{Introduction}
+		\begin{block}{}
+			The following assignment is based on:
+
+			B. Chang, M. Chen, E. Haber, E. H. Chi, 
+			\emph{AntisymmetricRNN: A Dynamical System View on Recurrent Neural Networks}, ICLR 2019
+
+			%All credit goes to the original authors, while any error is to be attributed to my adaptation 
+		\end{block}
+
+		In this paper, connections between RNNs and ODEs are drawn. 
+		Specifically, the issue of RNN trainability is studied within this theoretical framework. 
+		The AntisymmetricRNN architecture is proposed to address such issue. %in such context. 
+		%Its key design aspects stem from the theory of dynamical systems and that of 
+		%leveraging the stability of its underlying ODE to ensure smooth gradient flow.
+		\smallskip 
+
+		AntisymmetricRNN:
+		\begin{itemize}
+			\item Is able to caputre long-term dependencies, thanks to the stability property of its 
+			underlying ODE
+			\item Is an alternative to gated variants of RNNs {\smaller (e.g. LSTMs, GRUs)}
+			\item Is an alternative to constraining the weight matrices to be unitary. 
+		\end{itemize}
+		\medskip
+
+		The AntisymmetricRNN can be seen as the forward Euler method 
+		applied to an ODE that describes the dynamics of a RNN {\smaller (in the continuum)}.
+		\smallskip
+
+		The core concept is that of \alert{stability}. 
+		Both the stability of the ODE solution and of the 
+		numerical method lead to the key design features that characterize the AntisymmetricRNN.
+	\end{frame}
+
+
+
+	\begin{frame}{Model description}{The (gated) AntisymmetricRNN's equation}
+		\begin{block}{AntisymmetricRNN}
+			The full equation describing a (gated) AntisymmetricRNN is:
+			\[
+				\begin{aligned}
+					{z_t} &= \sigma\qty((W_h-W_h^t-\gamma I)h_{t-1}+V_z x_t+b_z)\\
+					h_t &= h_{t-1}{+}\epsilon\,{z_t\odot}\tanh\qty((W_h-W_h^t-\gamma I)h_{t-1}+V_h x_t+b_h)
+				\end{aligned}
+			\]
+			where $\odot$ denotes the Hadamard product, $\sigma$ denotes the sigmoid function,
+			$V_{-}\in\R{n}{p},W_h\in\R{n}{n},b_{-}\in\R{n}$ are model parameters,
+			$x_t\in\R{p},h_{t-1}\in\R{n}$ are the input at time $t$ and the previous hidden state (respectively),
+			$\epsilon>0,\gamma>0$ are hyperparameters.
+		\end{block}
+		\begin{itemize}
+			\item $z_t$: input gate that controls the flow of information into the hidden states,
+				via Hadamard product.
+			\item $+$: residual connection 
+		\end{itemize}
+		
+	\end{frame}
+
+
+
+	\begin{frame}{Equation 1/3}{}
+		The "heart" of the model is given by the equation
+		\begin{equation}\label{eqn:RNN_euler}
+			h_t = h_{t-1}+\epsilon\,\tanh\qty((W_h-W_h^t-\gamma I)h_{t-1}+V_h x_t+b_h).
+		\end{equation}
+
+		Equation~\eqref{eqn:RNN_euler} comes from the explicit Euler (EE) method applied to the ODE
+		\begin{equation}\label{eqn:RNN_ODE}
+			h'(t)=\tanh\qty((W_h-W_h^t-\gamma I)h(t)+V_h x(t)+b_h),
+		\end{equation}
+		%\vspace{-\baselineskip}
+		
+
+		which in turn can be seen as the usual update equation for the hidden state in an RNN,
+		but in the continuum.
+		\medskip
+
+		There are two notable differences, whose role will be explained:
+		\begin{enumerate}
+			\item Skew-symmetric weight matrix $W_h-W_h^t$
+			\item Diffusion term $-\gamma I$
+		\end{enumerate}
+		\smallskip
+
+		\emph{Notation}: $[n]\coloneqq\qty{1,\dots,n}$, 
+		$\lambda_k(M)$: $k$-th eigenvalue of $M\in\R{n}{n}$.
+	\end{frame}
+
+
+
+	\begin{frame}{Equation 2/3}{Skew-symmetric weight matrix}
+		The skew-symmetric matrix $W_h-W_h^t$ comes from the requirement of \emph{stability}
+		of the solutions of~\eqref{eqn:RNN_ODE} {\smaller (leaving aside $-\gamma I$ for now)}.
+		\medskip
+
+		In fact, let $A(t)\coloneqq\pdv*{h(t)}{h(0)}$.
+		\begin{block}{}
+			$A(t)$ represents the Jacobian of the hidden state $h(t)$ w.r.t. the initial 
+			hidden state $h_0$. Precisely the quantity of interest in BPTT.
+		\end{block}
+		By differentiating~\eqref{eqn:RNN_ODE} w.r.t. $h(0)$ we get
+		\begin{equation}\label{eqn:RNN_ODE_diff_h}
+			A'(t)=J(t)A(t)\qquad\text{with initial condition }A(0)=I,
+		\end{equation}
+		%\vspace*{-\baselineskip}
+
+		where $J(t)$ is the Jacobian of the RHS in~\eqref{eqn:RNN_ODE} w.r.t $h(t)$, given by:
+		\[
+			J(t)=\Diag{\tanh'\qty((W_h-W_h^t)h(t)+V_hx(t)+b_h)}\cdot\qty(W_h-W_h^t)\equiv D(t)\cdot M.
+		\]
+		$J(t)$ is a smooth, slowly changing function of $t$, and 
+		$\lambda_k\qty(J(t))\in \iu\R\quad\forall\,k\in [n]$.
+		\smallskip 
+		
+		Therefore, the solution to~\eqref{eqn:RNN_ODE_diff_h} is 
+		$A(t)=\exp(\int_0^t J(s)\dd{s})\cdot A(0)\approx\exp(J\cdot t)$.
+
+		Consequently, $\lambda_k(A(t))\approx 1\quad\forall k\in[n]$, 
+		since $\lambda_k(A(t))=\exp\qty(\lambda_k\qty(J(t)))$%\quad\forall\,k\in[n]$
+		.
+
+		\begin{itemize}
+			\item ODE solutions are \alert{stable}
+			\item Gradient norm is preserved {\smaller (no gradient explosion/vanish)}
+		\end{itemize} 
+	\end{frame}
+
+
+
+	\begin{frame}{Equation 3/3}{Diffusion term}
+		The EE method is 
+		\alert{stable} if {\smaller $(J_t\equiv J\text{ evaluated in }h_t)$}:
+		\[
+			\abs{1+\epsilon\cdot\lambda_k\qty(J_t)}\le 1\qquad\forall\,k\in[n]\quad\forall\,t.
+		\]
+		%\vspace{-1.5em}
+		Now,
+		%\vspace{-\baselineskip}
+		%\begin{equation*}
+			$\lambda_k\qty(J(t))\in \iu\R\quad\forall\,k\implies\abs{1+\epsilon\cdot\lambda_k\qty(J_t)}>1\quad\forall\,\epsilon>0,\ \forall\,k\in[n].$
+		%\end{equation*}
+		%\vspace{-1.5\baselineskip}
+
+		\begin{oss}
+			That is, the condition that allows for long-term dependencies to be preserved conflicts with 
+			the stability condition of the forward method.
+			\smallskip
+
+			Stability of EE method: numerical errors are not amplified by the 
+			forward propagation step {\smaller (a stable solution of an ODE may still be integrated 
+			badly by a numerical method)}.
+		\end{oss}
+
+		Hence a \emph{diffusion term} is added to the system, 
+		to stabilize the numerical method:
+		$W_h-W_h^t\leadsto W_h-W_h^t-\gamma I$, and the Jacobian becomes $D(t)\cdot\qty(M-\gamma I)$.
+		\smallskip 
+
+		\begin{itemize}
+			\item With this modification, $\Re\lambda_k\qty(J(t))<0$ slightly 
+			{\smaller (as $\operatorname{Spec}\qty(J(t))$ is shifed by $-\gamma$)}.
+			\item Furthermore, $W_h-W_h^t-\gamma I$ is not skew-symmetric anymore!
+		\end{itemize}
+	\end{frame}
+
+
+
+	\begin{frame}{Key empirical results}
+		%Predictable dynamics: simple example with 2x2 matrices show that the dynamics
+		%described by the AntisymmetricRNN is fully predictable, knowing the 
+		%eigenvalues of the (randomly initialized) weight matrix. 
+		%The dynamics of the vanilla RNN is unpredictable
+
+		\textbf{Permuted pixel-by-pixel MNIST}.
+
+		Input data: sequences of length $28\times 28=784$.
+		A (fixed, random) permutation is applied to each sequence.
+
+		To succeed, a model must be able to learn non-local, long-range dependencies. 
+
+		AntisymmetricRNN achieves $95.8\%$ accuracy 
+		with $128$ units and $10k$ parameters, surpassing LSTM (acc. $92.1\%$, 
+		$128$ units, $68k$ parameters) and other models.
+		\medskip
+
+
+		\textbf{Noise-padded CIFAR10}.
+
+		Input data: sequences $\qty{v_i}_{i\in[1000]}$ with $v_i\in\R{32}$. Only the 
+		first $32$ steps of the sequence carry information.
+
+		Gated AntisymmetricRNN achieves $54.7\%$ accuracy with $256$ units and $37k$ parameters, 
+		surpassing LSTM (acc. $11.6\%$, $128$ units, $69k$ parameters). 
+		\smallskip
+
+		A direct study of the mean and stdev of the eigenvalues of the end-to-end Jacobian 
+		of the networks for different sequence lengths
+		show that AntisymmetricRNN keeps them close to 1 (with low stdev), 
+		provided that $\gamma$ is modest, even across many time steps. 
+		On the other hand, LSTM's eigenvalue decay to $0$. 
+		\begin{itemize}
+			\item LSTM performs badly on the task
+			\item mean $\approx 1$ and stdev $\approx 0$ indicate 
+			non-exploding/non-vanishing gradients
+		\end{itemize}
+	\end{frame}
+
+
+
+	\begin{frame}{Conclusions}
+		AntisymmetricRNN is a simple yet effective model, which draws inspiration in its design
+		from the theory of dynamical systems and that of ODE numerical methods. 
+		\medskip 
+
+		Main \textbf{pros}:
+		\begin{itemize}
+			\item Few parameters: a skew-symmetric matrix $M\in\R{n}{n}$ only requires $n(n-1)/2$ 
+			parameters to be fully specified
+			\item Performance: as the experiments show, the architecture is able to capture long-term 
+			dependencies and achieve good results on the tasks
+			\item Little computation overhead, w.r.t. other approaches 
+			{\smaller (e.g. unitary matrices)}.
+		\end{itemize}
+
+		Main \textbf{cons}:
+		\begin{itemize}
+			\item Careful search of hyperparameters: {\smaller the stability of the forward 
+			propagation depends on $\epsilon\cdot\lambda\qty(J(t))$, 
+			$\lambda\qty(J(t))$ in turn depends on $\gamma$.}
+			\item $\gamma$ hyperparameter imposes a tradeoff:
+			\begin{itemize}
+				\item {$\bm{\gamma\approx 0}$}: The weight matrix is close to being skew-symmetric
+				$\implies$ stable backward propagation, but less stable forward propagation
+				\item {$\bm{\gamma>0}$}: The Jacobian's eigenvalue have negative real part 
+				$\implies$ lossy system (aka long-term dependencies aren't well captured), 
+				but the Euler method is more stable (aka forward propagation is more stable). 
+			\end{itemize} 
+		\end{itemize}
+	\end{frame}
+
+
+
+\end{document}
+
